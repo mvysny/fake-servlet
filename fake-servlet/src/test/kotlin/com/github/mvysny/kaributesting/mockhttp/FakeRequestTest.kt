@@ -7,9 +7,9 @@ import kotlin.test.expect
 /**
  * @author mavi
  */
-class MockRequestTest : DynaTest({
-    lateinit var request: MockRequest
-    beforeEach { request = MockRequest(MockHttpSession.create(MockContext())) }
+class FakeRequestTest : DynaTest({
+    lateinit var request: FakeRequest
+    beforeEach { request = FakeRequest(FakeHttpSession.create(FakeContext())) }
 
     test("attributes") {
         expect(null) { request.getAttribute("foo") }
@@ -38,7 +38,7 @@ class MockRequestTest : DynaTest({
     }
 
     test("getSession(false) returns the old invalid session") {
-        val session = request.session as MockHttpSession
+        val session = request.session as FakeHttpSession
         expect(true) { session.isValid }
         session.setAttribute("foo", "bar")
         session.invalidate()
@@ -47,25 +47,25 @@ class MockRequestTest : DynaTest({
     }
 
     test("getSession(true) creates a new session when invalidated") {
-        var session = request.session as MockHttpSession
+        var session = request.session as FakeHttpSession
         expect(true) { session.isValid }
         session.setAttribute("foo", "bar")
         session.invalidate()
         expect(false) { session.isValid }
         expect(true) { session != request.getSession(true) }
-        session = request.getSession(true) as MockHttpSession
+        session = request.getSession(true) as FakeHttpSession
         expect(true) { session.isValid }
         expect(null) { session.getAttribute("foo") }
     }
 
     test("getSession() creates a new session when invalidated") {
-        var session = request.session as MockHttpSession
+        var session = request.session as FakeHttpSession
         expect(true) { session.isValid }
         session.setAttribute("foo", "bar")
         session.invalidate()
         expect(false) { session.isValid }
         expect(true) { session != request.session }
-        session = request.session as MockHttpSession
+        session = request.session as FakeHttpSession
         expect(true) { session.isValid }
         expect(null) { session.getAttribute("foo") }
     }
@@ -84,5 +84,9 @@ class MockRequestTest : DynaTest({
         expect(false) { request.isUserInRole("foo") }
         request.isUserInRole = { p, r -> (p as MockPrincipal).isUserInRole(r) }
         expect(true) { request.isUserInRole("foo") }
+    }
+
+    test("changeSessionId()") {
+        expect(false) { request.session.id == request.changeSessionId() }
     }
 })

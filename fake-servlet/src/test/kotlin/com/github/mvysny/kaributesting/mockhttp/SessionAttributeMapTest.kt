@@ -7,10 +7,10 @@ import kotlin.test.expect
  * @author mavi
  */
 class SessionAttributeMapTest : DynaTest({
-    lateinit var session: MockHttpSession
+    lateinit var session: FakeHttpSession
     lateinit var attrs: MutableMap<String, Any>
     beforeEach {
-        session = MockHttpSession.create(MockContext())
+        session = FakeHttpSession.create(FakeContext())
         attrs = session.attributes
     }
 

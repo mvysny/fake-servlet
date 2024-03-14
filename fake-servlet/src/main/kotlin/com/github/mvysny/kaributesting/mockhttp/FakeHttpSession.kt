@@ -5,26 +5,29 @@ package com.github.mvysny.kaributesting.mockhttp
 import java.io.Serializable
 import java.util.Enumeration
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpSession
 import javax.servlet.http.HttpSessionContext
 
+@Deprecated("renamed")
+public typealias MockHttpSession = FakeHttpSession
+
 /**
  * A standalone implementation of the [HttpSession] interface.
  */
-public open class MockHttpSession(
-        private val sessionId: String,
+public open class FakeHttpSession(
+        private var sessionId: String,
         private val servletContext: ServletContext,
         private val creationTime: Long,
         private var maxInactiveInterval: Int
 ) : HttpSession, Serializable {
     private val attributes = ConcurrentHashMap<String, Any>()
-    private val valid = AtomicBoolean(true)
+    @Volatile
+    private var valid = true
 
-    public val isValid: Boolean get() = valid.get()
+    public val isValid: Boolean get() = valid
 
     public constructor(session: HttpSession) : this(session.id, session.servletContext, session.lastAccessedTime, session.maxInactiveInterval) {
         copyAttributes(session)
@@ -58,6 +61,12 @@ public open class MockHttpSession(
     override fun getSessionContext(): HttpSessionContext? = null
 
     override fun getAttribute(name: String): Any? {
+        // according to the servlet spec we should throw an IllegalStateException if the session is invalidated.
+        // However, Spring's SecurityContextLogoutHandler calls getContext() on logout after invalidating the session,
+        // which goes to VaadinAwareSecurityContextHolderStrategy.getContext() which then calls getAttribute() on the session.
+
+        // Since it apparently works in other servlet containers, we'll disable the check by default. See MockHttpEnvironment.strictSessionValidityChecks
+        // for more details.
         checkValid()
         return attributes[name]
     }
@@ -74,6 +83,12 @@ public open class MockHttpSession(
     override fun getValueNames(): Array<String> = attributeNames.toList().toTypedArray()
 
     override fun setAttribute(name: String, value: Any?) {
+        // according to the servlet spec we should throw an IllegalStateException if the session is invalidated.
+        // However, Spring's SecurityContextLogoutHandler invalidates the session then
+        // calls HttpSessionSecurityContextRepository.saveContextInHttpSession() which then calls setAttribute() on the session.
+
+        // Since it apparently works in other servlet containers, we'll disable the check by default. See MockHttpEnvironment.strictSessionValidityChecks
+        // for more details.
         checkValid()
         attributes.putOrRemove(name, value)
     }
@@ -93,7 +108,7 @@ public open class MockHttpSession(
         removeAttribute(name)
     }
 
-    public fun copyAttributes(httpSession: HttpSession): MockHttpSession {
+    public fun copyAttributes(httpSession: HttpSession): FakeHttpSession {
         httpSession.attributeNames.toList().forEach {
             attributes[it] = httpSession.getAttribute(it)
         }
@@ -102,7 +117,7 @@ public open class MockHttpSession(
 
     override fun invalidate() {
         checkValid()
-        valid.set(false)
+        valid = false
     }
 
     override fun isNew(): Boolean {
@@ -111,7 +126,7 @@ public open class MockHttpSession(
     }
 
     private fun checkValid() {
-        if (!isValid) {
+        if (!isValid && FakeHttpEnvironment.strictSessionValidityChecks) {
             throw IllegalStateException("invalidated: $this")
         }
     }
@@ -121,12 +136,18 @@ public open class MockHttpSession(
 
     public companion object {
         private val sessionIdGenerator = AtomicInteger()
-        public fun create(ctx: ServletContext): MockHttpSession =
-            MockHttpSession(
-                sessionIdGenerator.incrementAndGet().toString(),
+        public fun create(ctx: ServletContext): FakeHttpSession =
+            FakeHttpSession(
+                generateSessionId(),
                 ctx,
                 System.currentTimeMillis(),
                 30
             )
+        private fun generateSessionId(): String = sessionIdGenerator.incrementAndGet().toString()
+    }
+
+    public fun changeSessionId(): String {
+        sessionId = generateSessionId()
+        return sessionId
     }
 }

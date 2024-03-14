@@ -7,7 +7,10 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.*
 import javax.servlet.http.*
 
-public open class MockRequest(private var session: HttpSession) : HttpServletRequest {
+@Deprecated("renamed")
+public typealias MockRequest = FakeRequest
+
+public open class FakeRequest(private var session: HttpSession) : HttpServletRequest {
 
     override fun getInputStream(): ServletInputStream {
         throw UnsupportedOperationException("not implemented")
@@ -53,18 +56,18 @@ public open class MockRequest(private var session: HttpSession) : HttpServletReq
     }
 
     /**
-     * Returns [MockHttpEnvironment.serverPort].
+     * Returns [FakeHttpEnvironment.serverPort].
      */
-    override fun getServerPort(): Int = MockHttpEnvironment.serverPort
+    override fun getServerPort(): Int = FakeHttpEnvironment.serverPort
 
     override fun getRequestedSessionId(): String = session.id
 
     override fun getServletPath(): String = ""
 
     override fun getSession(create: Boolean): HttpSession {
-        val isValid = (session as? MockHttpSession)?.isValid ?: true
+        val isValid = (session as? FakeHttpSession)?.isValid ?: true
         if (create && !isValid) {
-            session = MockHttpSession.create(session.servletContext)
+            session = FakeHttpSession.create(session.servletContext)
         }
         return session
     }
@@ -91,9 +94,9 @@ public open class MockRequest(private var session: HttpSession) : HttpServletReq
     override fun isRequestedSessionIdFromURL(): Boolean = false
 
     /**
-     * Returns [MockHttpEnvironment.localPort].
+     * Returns [FakeHttpEnvironment.localPort].
      */
-    override fun getLocalPort(): Int = MockHttpEnvironment.localPort
+    override fun getLocalPort(): Int = FakeHttpEnvironment.localPort
 
     @Deprecated("Deprecated in Java")
     override fun isRequestedSessionIdFromUrl(): Boolean = false
@@ -120,9 +123,7 @@ public open class MockRequest(private var session: HttpSession) : HttpServletReq
 
     override fun getParameterNames(): Enumeration<String> = Collections.enumeration(parameters.keys)
 
-    override fun authenticate(response: HttpServletResponse?): Boolean {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun authenticate(response: HttpServletResponse): Boolean = FakeHttpEnvironment.authenticator(response)
 
     override fun getPathTranslated(): String {
         throw UnsupportedOperationException("not implemented")
@@ -130,9 +131,8 @@ public open class MockRequest(private var session: HttpSession) : HttpServletReq
 
     override fun getIntHeader(name: String): Int = getHeader(name)?.toInt() ?: -1
 
-    override fun changeSessionId(): String {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun changeSessionId(): String =
+        (session as FakeHttpSession).changeSessionId()
 
     override fun getAsyncContext(): AsyncContext {
         throw IllegalStateException("async not supported in mock environment")
@@ -179,7 +179,7 @@ public open class MockRequest(private var session: HttpSession) : HttpServletReq
 
     override fun getAttributeNames(): Enumeration<String> = attributes.keys()
 
-    override fun getRemoteAddr(): String = MockHttpEnvironment.remoteAddr
+    override fun getRemoteAddr(): String = FakeHttpEnvironment.remoteAddr
 
     override fun getHeaders(name: String): Enumeration<String> {
         val h = headers[name]
@@ -200,9 +200,9 @@ public open class MockRequest(private var session: HttpSession) : HttpServletReq
     override fun getLocales(): Enumeration<Locale> = Collections.enumeration(listOf(locale))
 
     /**
-     * Returns [MockHttpEnvironment.authType]
+     * Returns [FakeHttpEnvironment.authType]
      */
-    override fun getAuthType(): String? = MockHttpEnvironment.authType
+    override fun getAuthType(): String? = FakeHttpEnvironment.authType
 
     override fun getCharacterEncoding(): String? = null
 
@@ -236,18 +236,18 @@ public open class MockRequest(private var session: HttpSession) : HttpServletReq
     override fun getParameter(parameter: String): String? = parameters[parameter]?.get(0)
 
     /**
-     * Returns [MockHttpEnvironment.remotePort].
+     * Returns [FakeHttpEnvironment.remotePort].
      */
-    override fun getRemotePort(): Int = MockHttpEnvironment.remotePort
+    override fun getRemotePort(): Int = FakeHttpEnvironment.remotePort
 
     override fun getDateHeader(name: String?): Long = -1
 
     override fun getRemoteHost(): String = "127.0.0.1"
 
     /**
-     * Returns [MockHttpEnvironment.isSecure]
+     * Returns [FakeHttpEnvironment.isSecure]
      */
-    override fun isSecure(): Boolean = MockHttpEnvironment.isSecure
+    override fun isSecure(): Boolean = FakeHttpEnvironment.isSecure
 
     public fun setParameter(name: String, vararg values: String) {
         parameters[name] = arrayOf(*values)

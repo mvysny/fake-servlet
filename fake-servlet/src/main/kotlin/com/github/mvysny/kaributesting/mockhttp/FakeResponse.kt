@@ -9,7 +9,10 @@ import javax.servlet.ServletOutputStream
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletResponse
 
-public open class MockResponse : HttpServletResponse {
+@Deprecated("renamed")
+public typealias MockResponse = FakeResponse
+
+public open class FakeResponse : HttpServletResponse {
     override fun encodeURL(url: String): String = url
 
     @Deprecated("Deprecated in Java")
