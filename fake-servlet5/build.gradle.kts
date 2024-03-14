@@ -1,5 +1,5 @@
 dependencies {
-    api("jakarta.servlet:jakarta.servlet-api:5.0.0")
+    api(libs.jakarta.servletapi)
     api(kotlin("stdlib-jdk8"))
     implementation(libs.slf4j.api)
 

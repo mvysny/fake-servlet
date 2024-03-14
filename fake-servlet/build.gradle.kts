@@ -1,5 +1,5 @@
 dependencies {
-    api("javax.servlet:javax.servlet-api:4.0.1")
+    api(libs.javax.servletapi)
     api(kotlin("stdlib-jdk8"))
     implementation(libs.slf4j.api)
 
