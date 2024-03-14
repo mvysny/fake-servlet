@@ -11,7 +11,7 @@ defaultTasks("clean", "build")
 
 allprojects {
     group = "com.github.mvysny.fake-servlet"
-    version = "1.0-SNAPSHOT"
+    version = "1.0"
 
     repositories {
         mavenCentral()
@@ -105,7 +105,7 @@ subprojects {
 }
 
 if (JavaVersion.current() > JavaVersion.VERSION_11 && gradle.startParameter.taskNames.contains("publish")) {
-    throw GradleException("Release Karibu-Testing 1.x with JDK 11 or lower; current JDK is ${JavaVersion.current()}")
-    // otherwise Kotlin will use Stream.toList() from JDK 15+, which will cause Karibu not working on JDK 14-
+    throw GradleException("Release fake-servlet 1.x with JDK 11 or lower; current JDK is ${JavaVersion.current()}")
+    // otherwise Kotlin will use Stream.toList() from JDK 15+, which will cause fake-servlet not working on JDK 14-
 }
 
