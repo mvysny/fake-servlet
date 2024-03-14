@@ -37,11 +37,11 @@ to your `pom.xml`:
 Use the following code to obtain the mock/fake instances:
 
 ```kotlin
-val context: ServletContext = MockContext()
-val servletConfig: ServletConfig = MockServletConfig(context)
-val session: HttpSession = MockHttpSession.create(context)
-val request: HttpServletRequest = MockRequest(session)
-val response: HttpServletResponse = MockResponse()
+val context: ServletContext = FakeContext()
+val servletConfig: ServletConfig = FakeServletConfig(context)
+val session: HttpSession = FakeHttpSession.create(context)
+val request: HttpServletRequest = FakeRequest(session)
+val response: HttpServletResponse = FakeResponse()
 ```
 
 See the `MockHttpEnvironment` class to tune the values returned by the `MockRequest` class.
