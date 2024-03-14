@@ -24,9 +24,6 @@ internal fun <K, V> MutableMap<K, V>.putOrRemove(key: K, value: V?) {
     if (value == null) remove(key) else set(key, value)
 }
 
-@Deprecated("renamed")
-public typealias MockHttpEnvironment = FakeHttpEnvironment
-
 public object FakeHttpEnvironment {
     /**
      * [FakeRequest.getLocalPort]
