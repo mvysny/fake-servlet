@@ -10,9 +10,9 @@ import java.io.Serializable
 import jakarta.servlet.http.HttpSession
 import kotlin.test.expect
 
-class MockHttpSessionTest : DynaTest({
+class FakeHttpSessionTest : DynaTest({
     lateinit var session: HttpSession
-    beforeEach { session = MockHttpSession.create(MockContext()) }
+    beforeEach { session = FakeHttpSession.create(FakeContext()) }
 
     test("attributes") {
         expect(null) { session.getAttribute("foo") }
@@ -37,12 +37,12 @@ class MockHttpSessionTest : DynaTest({
     }
 
     group("invalidate") {
-        beforeGroup { MockHttpEnvironment.strictSessionValidityChecks = true }
-        afterGroup { MockHttpEnvironment.strictSessionValidityChecks = false }
+        beforeGroup { FakeHttpEnvironment.strictSessionValidityChecks = true }
+        afterGroup { FakeHttpEnvironment.strictSessionValidityChecks = false }
 
         test("smoke") {
             session.invalidate()
-            expect(false) { (session as MockHttpSession).isValid }
+            expect(false) { (session as FakeHttpSession).isValid }
         }
         test("calling invalidate() second time throws") {
             session.invalidate()

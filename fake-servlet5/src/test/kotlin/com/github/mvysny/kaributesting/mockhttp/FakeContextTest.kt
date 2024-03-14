@@ -3,12 +3,11 @@ package com.github.mvysny.kaributesting.mockhttp
 import com.github.mvysny.dynatest.DynaTest
 import com.github.mvysny.dynatest.cloneBySerialization
 import com.github.mvysny.dynatest.expectList
-import jakarta.servlet.ServletContext
 import kotlin.test.expect
 
-class MockContextTest : DynaTest({
-    lateinit var ctx: MockContext
-    beforeEach { ctx = MockContext() }
+class FakeContextTest : DynaTest({
+    lateinit var ctx: FakeContext
+    beforeEach { ctx = FakeContext() }
 
     test("attributes") {
         expect(null) { ctx.getAttribute("foo") }

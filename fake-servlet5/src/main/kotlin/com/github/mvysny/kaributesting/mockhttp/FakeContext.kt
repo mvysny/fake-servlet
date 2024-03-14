@@ -14,7 +14,10 @@ import jakarta.servlet.*
 import jakarta.servlet.descriptor.JspConfigDescriptor
 import kotlin.collections.HashMap
 
-public open class MockContext : ServletContext, Serializable {
+@Deprecated("Renamed to FakeContext")
+public typealias MockContext = FakeContext
+
+public open class FakeContext : ServletContext, Serializable {
     @Deprecated("Deprecated in Java")
     override fun getServlet(name: String): Servlet? {
         // this method is deprecated since servlet spec 2.1 and should always return null.
@@ -273,7 +276,7 @@ public open class MockContext : ServletContext, Serializable {
 
     public companion object {
         @JvmStatic
-        private val log = LoggerFactory.getLogger(MockContext::class.java)
+        private val log = LoggerFactory.getLogger(FakeContext::class.java)
     }
 }
 

@@ -6,9 +6,9 @@ import com.github.mvysny.dynatest.expectThrows
 import jakarta.servlet.http.Cookie
 import kotlin.test.expect
 
-class MockResponseTest : DynaTest({
-    lateinit var request: MockResponse
-    beforeEach { request = MockResponse() }
+class FakeResponseTest : DynaTest({
+    lateinit var request: FakeResponse
+    beforeEach { request = FakeResponse() }
 
     test("headers") {
         expect(null) { request.getHeader("foo") }

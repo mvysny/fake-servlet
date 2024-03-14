@@ -4,7 +4,10 @@ import java.util.*
 import jakarta.servlet.*
 import jakarta.servlet.http.HttpServletResponse
 
-public open class MockServletConfig(public val context: ServletContext) : ServletConfig {
+@Deprecated("renamed to FakeServletConfig")
+public typealias MockServletConfig = FakeServletConfig
+
+public open class FakeServletConfig(public val context: ServletContext) : ServletConfig {
 
     /**
      * Per-servlet init parameters.
@@ -24,39 +27,42 @@ internal fun <K, V> MutableMap<K, V>.putOrRemove(key: K, value: V?) {
     if (value == null) remove(key) else set(key, value)
 }
 
-public object MockHttpEnvironment {
+@Deprecated("renamed")
+public typealias MockHttpEnvironment = FakeHttpEnvironment
+
+public object FakeHttpEnvironment {
     /**
-     * [MockRequest.getLocalPort]
+     * [FakeRequest.getLocalPort]
      */
     public var localPort: Int = 8080
 
     /**
-     * [MockRequest.getServerPort]
+     * [FakeRequest.getServerPort]
      */
     public var serverPort: Int = 8080
 
     /**
-     * [MockRequest.getRemotePort]
+     * [FakeRequest.getRemotePort]
      */
     public var remotePort: Int = 8080
 
     /**
-     * [MockRequest.getRemoteAddr]
+     * [FakeRequest.getRemoteAddr]
      */
     public var remoteAddr: String = "127.0.0.1"
 
     /**
-     * [MockRequest.getAuthType]
+     * [FakeRequest.getAuthType]
      */
     public var authType: String? = null
 
     /**
-     * [MockRequest.isSecure]
+     * [FakeRequest.isSecure]
      */
     public var isSecure: Boolean = false
 
     /**
-     * [MockRequest.authenticate]
+     * [FakeRequest.authenticate]
      */
     public var authenticator: (HttpServletResponse) -> Boolean = { throw UnsupportedOperationException("not implemented. Set MockHttpEnvironment.authenticator to override") }
 
@@ -66,9 +72,9 @@ public object MockHttpEnvironment {
      * code apparently works and is happily reading and writing http session attributes on an invalidated session.
      *
      * Therefore this setting defaults to false which disables all session invalidity checks. Turn this
-     * to true, to make [MockHttpSession] behave according to the spec.
+     * to true, to make [FakeHttpSession] behave according to the spec.
      *
-     * See [MockHttpSession.getAttribute] implementation for more details.
+     * See [FakeHttpSession.getAttribute] implementation for more details.
      */
     public var strictSessionValidityChecks: Boolean = false
 }

@@ -11,10 +11,13 @@ import jakarta.servlet.ServletContext
 import jakarta.servlet.http.HttpSession
 import jakarta.servlet.http.HttpSessionContext
 
+@Deprecated("renamed")
+public typealias MockHttpSession = FakeHttpSession
+
 /**
  * A standalone implementation of the [HttpSession] interface.
  */
-public open class MockHttpSession(
+public open class FakeHttpSession(
         private var sessionId: String,
         private val servletContext: ServletContext,
         private val creationTime: Long,
@@ -105,7 +108,7 @@ public open class MockHttpSession(
         removeAttribute(name)
     }
 
-    public fun copyAttributes(httpSession: HttpSession): MockHttpSession {
+    public fun copyAttributes(httpSession: HttpSession): FakeHttpSession {
         httpSession.attributeNames.toList().forEach {
             attributes[it] = httpSession.getAttribute(it)
         }
@@ -123,7 +126,7 @@ public open class MockHttpSession(
     }
 
     private fun checkValid() {
-        if (!isValid && MockHttpEnvironment.strictSessionValidityChecks) {
+        if (!isValid && FakeHttpEnvironment.strictSessionValidityChecks) {
             throw IllegalStateException("invalidated: $this")
         }
     }
@@ -133,8 +136,8 @@ public open class MockHttpSession(
 
     public companion object {
         private val sessionIdGenerator = AtomicInteger()
-        public fun create(ctx: ServletContext): MockHttpSession =
-            MockHttpSession(
+        public fun create(ctx: ServletContext): FakeHttpSession =
+            FakeHttpSession(
                 generateSessionId(),
                 ctx,
                 System.currentTimeMillis(),
