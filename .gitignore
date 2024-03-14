@@ -1,12 +1,3 @@
 .idea
 build
 .gradle
-classes
-local.properties
-*.iml
-out
-
-target
-example/frontend/generated
-
-!**/src/main/dev-bundle/webapp/VAADIN/build
