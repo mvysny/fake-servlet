@@ -1,11 +1,8 @@
-package com.github.mvysny.kaributesting.mockhttp
+package com.github.mvysny.fakeservlet
 
 import java.util.*
 import javax.servlet.*
 import javax.servlet.http.HttpServletResponse
-
-@Deprecated("renamed to FakeServletConfig")
-public typealias MockServletConfig = FakeServletConfig
 
 public open class FakeServletConfig(public val context: ServletContext) : ServletConfig {
 

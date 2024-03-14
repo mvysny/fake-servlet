@@ -1,4 +1,4 @@
-package com.github.mvysny.kaributesting.mockhttp
+package com.github.mvysny.fakeservlet
 
 import java.io.IOException
 import java.io.PrintWriter
@@ -8,9 +8,6 @@ import java.util.concurrent.CopyOnWriteArrayList
 import javax.servlet.ServletOutputStream
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletResponse
-
-@Deprecated("renamed")
-public typealias MockResponse = FakeResponse
 
 public open class FakeResponse : HttpServletResponse {
     override fun encodeURL(url: String): String = url

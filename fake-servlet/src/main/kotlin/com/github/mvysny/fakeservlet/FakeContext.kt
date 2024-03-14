@@ -1,4 +1,4 @@
-package com.github.mvysny.kaributesting.mockhttp
+package com.github.mvysny.fakeservlet
 
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -13,9 +13,6 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.*
 import javax.servlet.descriptor.JspConfigDescriptor
 import kotlin.collections.HashMap
-
-@Deprecated("Renamed to FakeContext")
-public typealias MockContext = FakeContext
 
 public open class FakeContext : ServletContext, Serializable {
     @Deprecated("Deprecated in Java")

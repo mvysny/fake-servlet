@@ -1,6 +1,6 @@
 @file:Suppress("OverridingDeprecatedMember", "DEPRECATION")
 
-package com.github.mvysny.kaributesting.mockhttp
+package com.github.mvysny.fakeservlet
 
 import java.io.Serializable
 import java.util.Enumeration
@@ -10,9 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpSession
 import javax.servlet.http.HttpSessionContext
-
-@Deprecated("renamed")
-public typealias MockHttpSession = FakeHttpSession
 
 /**
  * A standalone implementation of the [HttpSession] interface.

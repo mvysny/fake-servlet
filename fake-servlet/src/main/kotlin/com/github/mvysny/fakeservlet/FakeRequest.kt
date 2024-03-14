@@ -1,4 +1,4 @@
-package com.github.mvysny.kaributesting.mockhttp
+package com.github.mvysny.fakeservlet
 
 import java.io.BufferedReader
 import java.security.Principal
@@ -6,9 +6,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.*
 import javax.servlet.http.*
-
-@Deprecated("renamed")
-public typealias MockRequest = FakeRequest
 
 public open class FakeRequest(private var session: HttpSession) : HttpServletRequest {
 

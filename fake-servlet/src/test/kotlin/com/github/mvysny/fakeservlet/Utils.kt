@@ -1,4 +1,4 @@
-package com.github.mvysny.kaributesting.mockhttp
+package com.github.mvysny.fakeservlet
 
 import java.security.Principal
 
