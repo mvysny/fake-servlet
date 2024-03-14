@@ -13,4 +13,4 @@ kotlin {
 
 @Suppress("UNCHECKED_CAST")
 val configureBintray = ext["configureMavenCentral"] as (artifactId: String) -> Unit
-configureBintray("mock-servlet-environment")
+configureBintray("fake-servlet")
