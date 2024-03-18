@@ -44,4 +44,6 @@ val request: HttpServletRequest = FakeRequest(session)
 val response: HttpServletResponse = FakeResponse()
 ```
 
-See the `MockHttpEnvironment` class to tune the values returned by the `MockRequest` class.
+See the `FakeHttpEnvironment` class to tune the values returned by the `Fake*` classes;
+also take a look at the individual `Fake*` classes for further configuration options.
+
