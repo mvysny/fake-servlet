@@ -183,9 +183,9 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getContextPath(): String = ""
 
-    override fun getSessionCookieConfig(): SessionCookieConfig {
-        throw UnsupportedOperationException("not implemented")
-    }
+    private val sessionCookieConfig = FakeSessionCookieConfig()
+
+    override fun getSessionCookieConfig(): SessionCookieConfig = sessionCookieConfig
 
     override fun getVirtualServerName(): String = "mock/localhost" // Tomcat returns "Catalina/localhost"
 
