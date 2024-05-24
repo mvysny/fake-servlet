@@ -108,8 +108,13 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getFilterRegistration(filterName: String): FilterRegistration? = filters[filterName]
 
+    private var sessionTrackingModes = defaultSessionTrackingModes
+
     override fun setSessionTrackingModes(sessionTrackingModes: MutableSet<SessionTrackingMode>) {
-        throw UnsupportedOperationException("not implemented")
+        require(!(sessionTrackingModes.contains(SessionTrackingMode.SSL) && sessionTrackingModes.size > 1)) {
+            "sessionTrackingModes: Invalid value $sessionTrackingModes: SSL must not be combined with other values"
+        }
+        this.sessionTrackingModes = sessionTrackingModes.toSet()
     }
 
     override fun setInitParameter(name: String, value: String): Boolean = initParameters.putIfAbsent(name, value) == null
@@ -262,8 +267,7 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getServerInfo(): String = "Mock"
 
-    override fun getEffectiveSessionTrackingModes(): Set<SessionTrackingMode> =
-        setOf(SessionTrackingMode.COOKIE, SessionTrackingMode.URL)
+    override fun getEffectiveSessionTrackingModes(): Set<SessionTrackingMode> = sessionTrackingModes.toSet()
 
     public companion object {
         @JvmStatic
