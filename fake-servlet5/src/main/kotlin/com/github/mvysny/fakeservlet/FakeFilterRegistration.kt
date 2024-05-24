@@ -2,29 +2,43 @@ package com.github.mvysny.fakeservlet
 
 import jakarta.servlet.DispatcherType
 import jakarta.servlet.FilterRegistration
+import jakarta.servlet.Registration
 import java.io.Serializable
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-public data class FakeFilterRegistration(public val filterName: String, public val filterClassName: String) : FilterRegistration.Dynamic, Serializable {
-    override fun getName(): String = filterName
-
-    override fun getClassName(): String = filterClassName
+public open class FakeRegistration(
+    private val name: String,
+    private val className: String
+) : Registration.Dynamic, Serializable {
+    override final fun getName(): String = name
+    override final fun getClassName(): String = className
 
     public val _initParameters: MutableMap<String, String> = ConcurrentHashMap<String, String>()
 
-    override fun setInitParameter(name: String, value: String): Boolean = _initParameters.putIfAbsent(name, value) == null
+    override final fun setInitParameter(name: String, value: String): Boolean = _initParameters.putIfAbsent(name, value) == null
 
-    override fun getInitParameter(name: String): String? = _initParameters[name]
+    override final fun getInitParameter(name: String): String? = _initParameters[name]
 
-    override fun setInitParameters(initParameters: MutableMap<String, String>): MutableSet<String> {
+    override final fun setInitParameters(initParameters: MutableMap<String, String>): MutableSet<String> {
         val result = mutableSetOf<String>()
         initParameters.forEach { (key, value) -> if (!setInitParameter(key, value)) result.add(value) }
         return result
     }
 
-    override fun getInitParameters(): Map<String, String> = Collections.unmodifiableMap(_initParameters)
+    override final fun getInitParameters(): Map<String, String> = Collections.unmodifiableMap(_initParameters)
 
+    public var _asyncSupported: Boolean = false
+
+    override final fun setAsyncSupported(isAsyncSupported: Boolean) {
+        _asyncSupported = isAsyncSupported
+    }
+
+    override fun toString(): String =
+        "${javaClass.simpleName}(name='$name', className='$className', initParameters=$_initParameters, _asyncSupported=$_asyncSupported)"
+}
+
+public class FakeFilterRegistration(name: String, className: String) : FakeRegistration(name, className), FilterRegistration.Dynamic, Serializable {
     public val _servletNameMappings: MutableMap<String, String> = ConcurrentHashMap<String, String>()
 
     override fun addMappingForServletNames(
@@ -48,10 +62,4 @@ public data class FakeFilterRegistration(public val filterName: String, public v
     }
 
     override fun getUrlPatternMappings(): Collection<String> = Collections.unmodifiableSet(_urlPatternMappings.keys)
-
-    public var _asyncSupported: Boolean = false
-
-    override fun setAsyncSupported(isAsyncSupported: Boolean) {
-        _asyncSupported = isAsyncSupported
-    }
 }
