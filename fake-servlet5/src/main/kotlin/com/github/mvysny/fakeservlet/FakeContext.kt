@@ -158,9 +158,7 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getMinorVersion(): Int = 0
 
-    override fun getJspConfigDescriptor(): JspConfigDescriptor {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getJspConfigDescriptor(): JspConfigDescriptor? = null
 
     override fun removeAttribute(name: String) {
         attributes.remove(name)
