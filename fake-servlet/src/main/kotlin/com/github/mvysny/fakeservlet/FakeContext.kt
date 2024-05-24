@@ -10,6 +10,7 @@ import java.net.URLConnection
 import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import javax.servlet.*
 import javax.servlet.descriptor.JspConfigDescriptor
 import kotlin.collections.HashMap
@@ -105,9 +106,7 @@ public open class FakeContext : ServletContext, Serializable {
         log.error(message, throwable)
     }
 
-    override fun getFilterRegistration(filterName: String?): FilterRegistration {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getFilterRegistration(filterName: String): FilterRegistration? = filters[filterName]
 
     override fun setSessionTrackingModes(sessionTrackingModes: MutableSet<SessionTrackingMode>) {
         throw UnsupportedOperationException("not implemented")
@@ -169,21 +168,22 @@ public open class FakeContext : ServletContext, Serializable {
         attributes.remove(name)
     }
 
-    override fun getServletContextName(): String {
-        throw UnsupportedOperationException("not implemented")
+    override fun getServletContextName(): String = "Fake context"
+
+    /**
+     * Maps filter name to its registration. All filters registered via [addFilter] will be present here.
+     */
+    public val filters: ConcurrentMap<String, FakeFilterRegistration> = ConcurrentHashMap()
+
+    override fun addFilter(filterName: String, className: String): FilterRegistration.Dynamic {
+        val reg = FakeFilterRegistration(filterName, className)
+        filters[filterName] = reg
+        return reg
     }
 
-    override fun addFilter(filterName: String?, className: String?): FilterRegistration.Dynamic {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun addFilter(filterName: String, filter: Filter): FilterRegistration.Dynamic = addFilter(filterName, filter.javaClass)
 
-    override fun addFilter(filterName: String?, filter: Filter?): FilterRegistration.Dynamic {
-        throw UnsupportedOperationException("not implemented")
-    }
-
-    override fun addFilter(filterName: String?, filterClass: Class<out Filter>?): FilterRegistration.Dynamic {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun addFilter(filterName: String, filterClass: Class<out Filter>): FilterRegistration.Dynamic = addFilter(filterName, filterClass.name)
 
     override fun getContextPath(): String = ""
 
