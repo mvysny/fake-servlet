@@ -17,33 +17,36 @@ public class FakeFilterRegistration(public val filterName: String, public val fi
     override fun getInitParameter(name: String): String? = _initParameters[name]
 
     override fun setInitParameters(initParameters: MutableMap<String, String>): MutableSet<String> {
-        this._initParameters.putAll(initParameters)
-        return mutableSetOf()
+        val result = mutableSetOf<String>()
+        initParameters.forEach { (key, value) -> if (!setInitParameter(key, value)) result.add(value) }
+        return result
     }
 
     override fun getInitParameters(): Map<String, String> = Collections.unmodifiableMap(_initParameters)
+
+    public val _servletNameMappings: MutableMap<String, String> = ConcurrentHashMap<String, String>()
 
     override fun addMappingForServletNames(
         dispatcherTypes: EnumSet<DispatcherType>,
         isMatchAfter: Boolean,
         vararg servletNames: String
     ) {
-        TODO("Not yet implemented")
+        servletNames.forEach { _servletNameMappings[it] = it }
     }
 
-    override fun getServletNameMappings(): MutableCollection<String> {
-        TODO("Not yet implemented")
-    }
+    override fun getServletNameMappings(): MutableCollection<String> = Collections.unmodifiableSet(_servletNameMappings.keys)
+
+    public val _urlPatternMappings: MutableMap<String, String> = ConcurrentHashMap<String, String>()
 
     override fun addMappingForUrlPatterns(
         dispatcherTypes: EnumSet<DispatcherType>,
         isMatchAfter: Boolean,
         vararg urlPatterns: String
     ) {
-        TODO("Not yet implemented")
+        urlPatterns.forEach { _urlPatternMappings[it] = it }
     }
 
-    override fun getUrlPatternMappings(): Collection<String> = listOf()
+    override fun getUrlPatternMappings(): Collection<String> = Collections.unmodifiableSet(_urlPatternMappings.keys)
 
     public var _asyncSupported: Boolean = false
 
