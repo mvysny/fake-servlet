@@ -1,5 +1,6 @@
 package com.github.mvysny.fakeservlet
 
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.PrintWriter
 import java.util.*
@@ -42,7 +43,8 @@ public open class FakeResponse : HttpServletResponse {
     override fun encodeRedirectURL(url: String): String = url
 
     override fun sendRedirect(location: String) {
-        throw UnsupportedOperationException("not implemented")
+        resetBuffer()
+        log.error("sendRedirect($location)")
     }
 
     public var _bufferSize: Int = 4096
@@ -56,11 +58,15 @@ public open class FakeResponse : HttpServletResponse {
     override fun getLocale(): Locale = _locale
 
     override fun sendError(sc: Int, msg: String?) {
-        throw IOException("The app requests a failure: $sc $msg")
+        reset()
+        log.error("The app requested to send an error: sendError($sc, $msg)")
+        _committed = true
     }
 
     override fun sendError(sc: Int) {
-        throw IOException("The app requests a failure: $sc")
+        reset()
+        log.error("The app requested to send an error: sendError($sc)")
+        _committed = true
     }
 
     override fun setContentLengthLong(len: Long) {
@@ -91,12 +97,16 @@ public open class FakeResponse : HttpServletResponse {
 
     override fun getBufferSize(): Int = _bufferSize
 
-    override fun resetBuffer() {
+    private fun checkNotCommitted() {
         check(!_committed) { "Already committed" }
     }
 
+    override fun resetBuffer() {
+        checkNotCommitted()
+    }
+
     override fun reset() {
-        check(!_committed) { "Already committed" }
+        checkNotCommitted()
     }
 
     override fun setDateHeader(name: String, date: Long) {
@@ -153,5 +163,10 @@ public open class FakeResponse : HttpServletResponse {
 
     override fun setContentType(type: String?) {
         _contentType = type
+    }
+
+    public companion object {
+        @JvmStatic
+        private val log = LoggerFactory.getLogger(FakeResponse::class.java)
     }
 }
