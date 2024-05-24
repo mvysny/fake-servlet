@@ -9,7 +9,11 @@ import jakarta.servlet.ServletOutputStream
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayOutputStream
 
+/**
+ * A response that keeps a [buffer] of written data.
+ */
 public open class FakeResponse : HttpServletResponse {
     override fun encodeURL(url: String): String = url
 
@@ -38,6 +42,8 @@ public open class FakeResponse : HttpServletResponse {
     override fun encodeRedirectUrl(url: String): String = encodeRedirectURL(url)
 
     override fun flushBuffer() {
+        buffer.reset()
+        _committed = true
     }
 
     override fun encodeRedirectURL(url: String): String = url
@@ -47,9 +53,12 @@ public open class FakeResponse : HttpServletResponse {
         log.error("sendRedirect($location)")
     }
 
+    public val buffer: ByteArrayOutputStream = ByteArrayOutputStream()
+
     public var _bufferSize: Int = 4096
 
     override fun setBufferSize(size: Int) {
+        checkNotCommitted()
         _bufferSize = size
     }
 
@@ -58,13 +67,13 @@ public open class FakeResponse : HttpServletResponse {
     override fun getLocale(): Locale = _locale
 
     override fun sendError(sc: Int, msg: String?) {
-        reset()
+        resetBuffer()
         log.error("The app requested to send an error: sendError($sc, $msg)")
         _committed = true
     }
 
     override fun sendError(sc: Int) {
-        reset()
+        resetBuffer()
         log.error("The app requested to send an error: sendError($sc)")
         _committed = true
     }
@@ -103,10 +112,12 @@ public open class FakeResponse : HttpServletResponse {
 
     override fun resetBuffer() {
         checkNotCommitted()
+        buffer.reset()
     }
 
     override fun reset() {
         checkNotCommitted()
+        buffer.reset()
     }
 
     override fun setDateHeader(name: String, date: Long) {
