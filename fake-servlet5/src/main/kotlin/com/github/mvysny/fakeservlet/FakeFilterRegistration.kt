@@ -6,7 +6,7 @@ import java.io.Serializable
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-public class FakeFilterRegistration(public val filterName: String, public val filterClassName: String) : FilterRegistration.Dynamic, Serializable {
+public data class FakeFilterRegistration(public val filterName: String, public val filterClassName: String) : FilterRegistration.Dynamic, Serializable {
     override fun getName(): String = filterName
 
     override fun getClassName(): String = filterClassName
