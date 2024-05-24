@@ -5,10 +5,12 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
+import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import javax.servlet.ServletOutputStream
+import javax.servlet.WriteListener
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletResponse
 
@@ -167,13 +169,21 @@ public open class FakeResponse : HttpServletResponse {
         headers[name] = arrayOf(value)
     }
 
-    override fun getOutputStream(): ServletOutputStream {
-        throw UnsupportedOperationException("not implemented")
+    override fun getOutputStream(): ServletOutputStream = object : ServletOutputStream() {
+        override fun write(b: Int) {
+            buffer.write(b)
+        }
+
+        override fun isReady(): Boolean = true
+
+        override fun setWriteListener(writeListener: WriteListener) {}
     }
 
     override fun setContentType(type: String?) {
         _contentType = type
     }
+
+    public fun getBufferAsString(): String = String(buffer.toByteArray(), Charset.forName(_characterEncoding))
 
     public companion object {
         @JvmStatic

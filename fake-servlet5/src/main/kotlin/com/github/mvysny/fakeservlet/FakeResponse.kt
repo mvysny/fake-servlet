@@ -6,6 +6,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import jakarta.servlet.ServletOutputStream
+import jakarta.servlet.WriteListener
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -168,14 +169,22 @@ public open class FakeResponse : HttpServletResponse {
         headers[name] = arrayOf(value)
     }
 
-    override fun getOutputStream(): ServletOutputStream {
-        throw UnsupportedOperationException("not implemented")
+    override fun getOutputStream(): ServletOutputStream = object : ServletOutputStream() {
+        override fun write(b: Int) {
+            buffer.write(b)
+        }
+
+        override fun isReady(): Boolean = true
+
+        override fun setWriteListener(writeListener: WriteListener) {}
     }
 
     override fun setContentType(type: String?) {
         _contentType = type
     }
-    
+
+    public fun getBufferAsString(): String = String(buffer.toByteArray(), Charset.forName(_characterEncoding))
+
     public companion object {
         @JvmStatic
         private val log = LoggerFactory.getLogger(FakeResponse::class.java)

@@ -15,7 +15,18 @@ class FakeResponseTest : DynaTest({
         request.isCommitted
         request.reset()
         request.resetBuffer()
-        request.writer
+    }
+
+    test("writer") {
+        val writer = request.writer
+        writer.print("Hello, world!")
+        writer.flush()
+        expect("Hello, world!") { request.getBufferAsString() }
+    }
+
+    test("output stream") {
+        request.outputStream.println("Hello, world!")
+        expect("Hello, world!\r\n") { request.getBufferAsString() }
     }
 
     test("headers") {
