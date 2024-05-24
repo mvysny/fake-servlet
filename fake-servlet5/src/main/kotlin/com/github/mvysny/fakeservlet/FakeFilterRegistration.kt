@@ -12,26 +12,26 @@ public open class FakeRegistration(
     private val name: String,
     private val className: String
 ) : Registration.Dynamic, Serializable {
-    override final fun getName(): String = name
-    override final fun getClassName(): String = className
+    final override fun getName(): String = name
+    final override fun getClassName(): String = className
 
     public val _initParameters: MutableMap<String, String> = ConcurrentHashMap<String, String>()
 
-    override final fun setInitParameter(name: String, value: String): Boolean = _initParameters.putIfAbsent(name, value) == null
+    final override fun setInitParameter(name: String, value: String): Boolean = _initParameters.putIfAbsent(name, value) == null
 
-    override final fun getInitParameter(name: String): String? = _initParameters[name]
+    final override fun getInitParameter(name: String): String? = _initParameters[name]
 
-    override final fun setInitParameters(initParameters: MutableMap<String, String>): MutableSet<String> {
+    final override fun setInitParameters(initParameters: MutableMap<String, String>): MutableSet<String> {
         val result = mutableSetOf<String>()
         initParameters.forEach { (key, value) -> if (!setInitParameter(key, value)) result.add(value) }
         return result
     }
 
-    override final fun getInitParameters(): Map<String, String> = Collections.unmodifiableMap(_initParameters)
+    final override fun getInitParameters(): Map<String, String> = Collections.unmodifiableMap(_initParameters)
 
     public var _asyncSupported: Boolean = false
 
-    override final fun setAsyncSupported(isAsyncSupported: Boolean) {
+    final override fun setAsyncSupported(isAsyncSupported: Boolean) {
         _asyncSupported = isAsyncSupported
     }
 
