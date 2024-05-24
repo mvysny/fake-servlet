@@ -10,6 +10,13 @@ class FakeResponseTest : DynaTest({
     lateinit var request: FakeResponse
     beforeEach { request = FakeResponse() }
 
+    test("smoke") {
+        // call stuff and make sure it won't throw
+        request.isCommitted
+        request.reset()
+        request.resetBuffer()
+    }
+
     test("headers") {
         expect(null) { request.getHeader("foo") }
         expectList() { request.headerNames.toList() }

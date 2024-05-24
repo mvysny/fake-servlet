@@ -92,11 +92,11 @@ public open class FakeResponse : HttpServletResponse {
     override fun getBufferSize(): Int = _bufferSize
 
     override fun resetBuffer() {
-        throw UnsupportedOperationException("not implemented")
+        check(!_committed) { "Already committed" }
     }
 
     override fun reset() {
-        throw UnsupportedOperationException("not implemented")
+        check(!_committed) { "Already committed" }
     }
 
     override fun setDateHeader(name: String, date: Long) {
@@ -109,8 +109,11 @@ public open class FakeResponse : HttpServletResponse {
 
     override fun getCharacterEncoding(): String = _characterEncoding
 
+    public var _committed: Boolean = false
+
     override fun isCommitted(): Boolean {
-        throw UnsupportedOperationException("not implemented")
+        // https://github.com/mvysny/karibu-testing/issues/174
+        return _committed
     }
 
     override fun setStatus(sc: Int) {
