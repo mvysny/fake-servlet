@@ -3,6 +3,7 @@ package com.github.mvysny.fakeservlet
 import java.io.Serializable
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
 import javax.servlet.DispatcherType
 import javax.servlet.FilterRegistration
 import javax.servlet.Registration
@@ -39,27 +40,27 @@ public open class FakeRegistration(
 }
 
 public class FakeFilterRegistration(name: String, className: String) : FakeRegistration(name, className), FilterRegistration.Dynamic, Serializable {
-    public val _servletNameMappings: MutableMap<String, String> = ConcurrentHashMap<String, String>()
+    private val _servletNameMappings = CopyOnWriteArraySet<String>()
 
     override fun addMappingForServletNames(
         dispatcherTypes: EnumSet<DispatcherType>,
         isMatchAfter: Boolean,
         vararg servletNames: String
     ) {
-        servletNames.forEach { _servletNameMappings[it] = it }
+        _servletNameMappings.addAll(servletNames)
     }
 
-    override fun getServletNameMappings(): MutableCollection<String> = Collections.unmodifiableSet(_servletNameMappings.keys)
+    override fun getServletNameMappings(): Collection<String> = _servletNameMappings.toSet()
 
-    public val _urlPatternMappings: MutableMap<String, String> = ConcurrentHashMap<String, String>()
+    private val _urlPatternMappings = CopyOnWriteArraySet<String>()
 
     override fun addMappingForUrlPatterns(
         dispatcherTypes: EnumSet<DispatcherType>,
         isMatchAfter: Boolean,
         vararg urlPatterns: String
     ) {
-        urlPatterns.forEach { _urlPatternMappings[it] = it }
+        _urlPatternMappings.addAll(urlPatterns)
     }
 
-    override fun getUrlPatternMappings(): Collection<String> = Collections.unmodifiableSet(_urlPatternMappings.keys)
+    override fun getUrlPatternMappings(): Collection<String> = _urlPatternMappings.toSet()
 }

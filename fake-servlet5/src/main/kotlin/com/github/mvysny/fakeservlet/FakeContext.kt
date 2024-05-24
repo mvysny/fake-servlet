@@ -235,21 +235,19 @@ public open class FakeContext : ServletContext, Serializable {
         throw UnsupportedOperationException("not implemented")
     }
 
-    override fun addServlet(servletName: String?, className: String?): ServletRegistration.Dynamic {
-        throw UnsupportedOperationException("not implemented")
+    private val _servlets = ConcurrentHashMap<String, FakeServletRegistration>()
+
+    override fun addServlet(servletName: String, className: String): ServletRegistration.Dynamic {
+        val reg = FakeServletRegistration(servletName, className)
+        _servlets[servletName] = reg
+        return reg
     }
 
-    override fun addServlet(servletName: String?, servlet: Servlet?): ServletRegistration.Dynamic {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun addServlet(servletName: String, servlet: Servlet): ServletRegistration.Dynamic = addServlet(servletName, servlet.javaClass)
 
-    override fun addServlet(servletName: String?, servletClass: Class<out Servlet>?): ServletRegistration.Dynamic {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun addServlet(servletName: String, servletClass: Class<out Servlet>): ServletRegistration.Dynamic = addServlet(servletName, servletClass.name)
 
-    override fun addJspFile(servletName: String, jspFile: String): ServletRegistration.Dynamic {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun addJspFile(servletName: String, jspFile: String): ServletRegistration.Dynamic = FakeServletRegistration(servletName, jspFile)
 
     @Deprecated("Deprecated in Java")
     override fun getServlets(): Enumeration<Servlet> = Collections.emptyEnumeration()

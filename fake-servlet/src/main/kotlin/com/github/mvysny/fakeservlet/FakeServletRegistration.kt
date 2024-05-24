@@ -1,20 +1,20 @@
 package com.github.mvysny.fakeservlet
 
 import java.io.Serializable
-import java.util.*
+import java.util.concurrent.CopyOnWriteArraySet
 import javax.servlet.MultipartConfigElement
 import javax.servlet.ServletRegistration
 import javax.servlet.ServletSecurityElement
 
 public class FakeServletRegistration(name: String, className: String) : FakeRegistration(name, className), ServletRegistration.Dynamic, Serializable {
-    public val _urlPatterns: MutableSet<String> = mutableSetOf()
+    private val _urlPatterns = CopyOnWriteArraySet<String>()
 
     override fun addMapping(vararg urlPatterns: String): Set<String> {
         _urlPatterns.addAll(urlPatterns)
         return setOf()
     }
 
-    override fun getMappings(): Collection<String> = Collections.unmodifiableSet(_urlPatterns)
+    override fun getMappings(): Collection<String> = _urlPatterns.toSet()
 
     public var _runAsRole: String? = null
 
