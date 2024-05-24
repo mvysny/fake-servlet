@@ -120,9 +120,7 @@ public open class FakeContext : ServletContext, Serializable {
         throw UnsupportedOperationException("not implemented")
     }
 
-    override fun getFilterRegistrations(): MutableMap<String, out FilterRegistration> {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getFilterRegistrations(): MutableMap<String, out FilterRegistration> = HashMap(filters)
 
     @Deprecated("Deprecated in Java")
     override fun getServletNames(): Enumeration<String> = Collections.emptyEnumeration()
