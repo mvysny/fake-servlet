@@ -15,6 +15,7 @@ class FakeResponseTest : DynaTest({
         request.isCommitted
         request.reset()
         request.resetBuffer()
+        request.writer
     }
 
     test("headers") {

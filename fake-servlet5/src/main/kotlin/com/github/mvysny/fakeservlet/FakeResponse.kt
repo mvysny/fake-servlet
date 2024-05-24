@@ -10,6 +10,8 @@ import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
+import java.io.OutputStreamWriter
+import java.nio.charset.Charset
 
 /**
  * A response that keeps a [buffer] of written data.
@@ -152,9 +154,7 @@ public open class FakeResponse : HttpServletResponse {
 
     override fun getContentType(): String? = _contentType
 
-    override fun getWriter(): PrintWriter {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getWriter(): PrintWriter = PrintWriter(OutputStreamWriter(buffer, _characterEncoding))
 
     override fun containsHeader(name: String): Boolean = headers.containsKey(name)
 

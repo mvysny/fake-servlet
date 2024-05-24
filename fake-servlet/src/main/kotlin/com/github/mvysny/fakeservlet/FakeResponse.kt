@@ -3,6 +3,7 @@ package com.github.mvysny.fakeservlet
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -152,9 +153,7 @@ public open class FakeResponse : HttpServletResponse {
 
     override fun getContentType(): String? = _contentType
 
-    override fun getWriter(): PrintWriter {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getWriter(): PrintWriter = PrintWriter(OutputStreamWriter(buffer, _characterEncoding))
 
     override fun containsHeader(name: String): Boolean = headers.containsKey(name)
 
