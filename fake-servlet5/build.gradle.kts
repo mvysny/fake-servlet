@@ -4,7 +4,8 @@ dependencies {
     implementation(libs.slf4j.api)
 
     testImplementation(libs.dynatest)
-    testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(libs.junit)
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation(libs.slf4j.simple)
 }
 
