@@ -1,10 +1,8 @@
 package com.github.mvysny.fakeservlet
 
-import com.github.mvysny.dynatest.DynaTest
-import com.github.mvysny.dynatest.expectList
-import com.github.mvysny.dynatest.expectThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import javax.servlet.http.Cookie
 import kotlin.test.expect
 
@@ -49,8 +47,9 @@ class FakeResponseTest {
         request.cookies += Cookie("foo", "bar")
         expect("bar") { request.getCookie("foo").value }
         expect(null) { request.findCookie("qqq") }
-        expectThrows(IllegalStateException::class, "no such cookie with name baz. Available cookies: foo=bar") {
+        val ex = assertThrows<IllegalStateException> {
             request.getCookie("baz")
         }
+        expect("no such cookie with name baz. Available cookies: foo=bar") { ex.message }
     }
 }
