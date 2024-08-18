@@ -1,88 +1,91 @@
 package com.github.mvysny.fakeservlet
 
 import com.github.mvysny.dynatest.DynaTest
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import kotlin.test.expect
 
 /**
  * @author mavi
  */
-class SessionAttributeMapTest : DynaTest({
-    lateinit var session: FakeHttpSession
-    lateinit var attrs: MutableMap<String, Any>
-    beforeEach {
+class SessionAttributeMapTest {
+    private lateinit var session: FakeHttpSession
+    private lateinit var attrs: MutableMap<String, Any>
+    @BeforeEach fun setup() {
         session = FakeHttpSession.create(FakeContext())
         attrs = session.attributes
     }
 
-    group("size") {
-        test("Initially zero") {
+    @Nested inner class size() {
+        @Test fun `Initially zero`() {
             expect(0) { attrs.size }
         }
-        test("put increases by 1") {
+        @Test fun `put increases by 1`() {
             attrs["foo"] = "bar"
             expect(1) { attrs.size }
         }
-        test("setAttribute increases by 1") {
+        @Test fun `setAttribute increases by 1`() {
             session.setAttribute("foo", "bar")
             expect(1) { attrs.size }
         }
-        test("clear sets size to 0") {
+        @Test fun `clear sets size to 0`() {
             attrs["foo"] = "bar"
             attrs.clear()
             expect(0) { attrs.size }
         }
     }
 
-    group("is empty") {
-        test("Initially true") {
+    @Nested inner class IsEmpty {
+        @Test fun `Initially true`() {
             expect(true) { attrs.isEmpty() }
         }
-        test("put makes map not empty") {
+        @Test fun `put makes map not empty`() {
             attrs["foo"] = "bar"
             expect(false) { attrs.isEmpty() }
         }
-        test("setAttribute makes map not empty") {
+        @Test fun `setAttribute makes map not empty`() {
             session.setAttribute("foo", "bar")
             expect(false) { attrs.isEmpty() }
         }
-        test("clear sets size to 0") {
+        @Test fun `clear sets size to 0`() {
             attrs["foo"] = "bar"
             attrs.clear()
             expect(true) { attrs.isEmpty() }
         }
     }
 
-    group("get") {
-        test("get from empty map returns null") {
+    @Nested inner class Get {
+        @Test fun `get from empty map returns null`() {
             expect(null) { attrs["foo"] }
         }
-        test("get non-existing key returns null") {
+        @Test fun `get non-existing key returns null`() {
             session.setAttribute("foo", "bar")
             expect(null) { attrs["bar"] }
         }
-        test("existing key retrieval") {
+        @Test fun `existing key retrieval`() {
             session.setAttribute("foo", "bar")
             expect("bar") { attrs["foo"] }
         }
-        test("get deleted key returns null") {
+        @Test fun `get deleted key returns null`() {
             session.setAttribute("foo", "bar")
             attrs.remove("foo")
             expect(null) { attrs["foo"] }
         }
     }
 
-    group("remove") {
-        test("remove from empty map does nothing") {
+    @Nested inner class Remove {
+        @Test fun `remove from empty map does nothing`() {
             expect(null) { attrs.remove("foo") }
             expect(true) { attrs.isEmpty() }
         }
-        test("remove non-existing key does nothing") {
+        @Test fun `remove non-existing key does nothing`() {
             attrs["bar"] = "foo"
             expect(null) { attrs.remove("foo") }
             expect("foo") { attrs["bar"] }
             expect("foo") { session.getAttribute("bar") }
         }
-        test("remove existing key") {
+        @Test fun `remove existing key`() {
             attrs["bar"] = "foo"
             expect("foo") { attrs.remove("bar") }
             expect(true) { attrs.isEmpty() }
@@ -90,17 +93,17 @@ class SessionAttributeMapTest : DynaTest({
         }
     }
 
-    group("clear") {
-        test("clear empty map does nothing") {
+    @Nested inner class clear {
+        @Test fun `clear empty map does nothing`() {
             attrs.clear()
             expect(true) { attrs.isEmpty() }
         }
-        test("clear map with one key") {
+        @Test fun `clear map with one key`() {
             attrs["foo"] = "bar"
             attrs.clear()
             expect(true) { attrs.isEmpty() }
         }
-        test("clear big map") {
+        @Test fun `clear big map`() {
             (0..1000).forEach { session.setAttribute(it.toString(), it) }
             expect(false) { attrs.isEmpty() }
             attrs.clear()
@@ -110,4 +113,4 @@ class SessionAttributeMapTest : DynaTest({
             }
         }
     }
-})
+}
