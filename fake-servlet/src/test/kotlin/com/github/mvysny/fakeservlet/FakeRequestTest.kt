@@ -1,17 +1,17 @@
 package com.github.mvysny.fakeservlet
 
-import com.github.mvysny.dynatest.DynaTest
-import com.github.mvysny.dynatest.expectList
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import kotlin.test.expect
 
 /**
  * @author mavi
  */
-class FakeRequestTest : DynaTest({
-    lateinit var request: FakeRequest
-    beforeEach { request = FakeRequest(FakeHttpSession.create(FakeContext())) }
+class FakeRequestTest {
+    private lateinit var request: FakeRequest
+    @BeforeEach fun setup() { request = FakeRequest(FakeHttpSession.create(FakeContext())) }
 
-    test("attributes") {
+    @Test fun attributes() {
         expect(null) { request.getAttribute("foo") }
         request.setAttribute("foo", "bar")
         expect("bar") { request.getAttribute("foo") }
@@ -23,7 +23,7 @@ class FakeRequestTest : DynaTest({
         expect(null) { request.getAttribute("foo") }
     }
 
-    test("parameters") {
+    @Test fun parameters() {
         expect(null) { request.getParameter("foo") }
         expectList() { request.parameterNames.toList() }
         expect(null) { request.getParameterValues("foo") }
@@ -37,7 +37,7 @@ class FakeRequestTest : DynaTest({
         expectList("bar", "baz") { request.getParameterValues("foo")!!.toList() }
     }
 
-    test("getSession(false) returns the old invalid session") {
+    @Test fun `getSession(false) returns the old invalid session`() {
         val session = request.session as FakeHttpSession
         expect(true) { session.isValid }
         session.setAttribute("foo", "bar")
@@ -46,7 +46,7 @@ class FakeRequestTest : DynaTest({
         expect(false) { session.isValid }
     }
 
-    test("getSession(true) creates a new session when invalidated") {
+    @Test fun `getSession(true) creates a new session when invalidated`() {
         var session = request.session as FakeHttpSession
         expect(true) { session.isValid }
         session.setAttribute("foo", "bar")
@@ -58,7 +58,7 @@ class FakeRequestTest : DynaTest({
         expect(null) { session.getAttribute("foo") }
     }
 
-    test("getSession() creates a new session when invalidated") {
+    @Test fun `getSession() creates a new session when invalidated`() {
         var session = request.session as FakeHttpSession
         expect(true) { session.isValid }
         session.setAttribute("foo", "bar")
@@ -70,13 +70,13 @@ class FakeRequestTest : DynaTest({
         expect(null) { session.getAttribute("foo") }
     }
 
-    test("principal") {
+    @Test fun principal() {
         expect(null) { request.userPrincipal }
         request.userPrincipalInt = MockPrincipal("foo")
         expect(MockPrincipal("foo")) { request.userPrincipal }
     }
 
-    test("isUserInRole") {
+    @Test fun isUserInRole() {
         expect(false) { request.isUserInRole("foo") }
         request.userPrincipalInt = MockPrincipal("foo")
         expect(false) { request.isUserInRole("foo") }
@@ -86,7 +86,7 @@ class FakeRequestTest : DynaTest({
         expect(true) { request.isUserInRole("foo") }
     }
 
-    test("changeSessionId()") {
+    @Test fun changeSessionId() {
         expect(false) { request.session.id == request.changeSessionId() }
     }
-})
+}
