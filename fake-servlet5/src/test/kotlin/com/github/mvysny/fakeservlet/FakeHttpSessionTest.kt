@@ -2,19 +2,18 @@
 
 package com.github.mvysny.fakeservlet
 
-import com.github.mvysny.dynatest.DynaTest
-import com.github.mvysny.dynatest.cloneBySerialization
-import com.github.mvysny.dynatest.expectList
-import com.github.mvysny.dynatest.expectThrows
 import java.io.Serializable
 import jakarta.servlet.http.HttpSession
+import org.junit.jupiter.api.*
 import kotlin.test.expect
 
-class FakeHttpSessionTest : DynaTest({
-    lateinit var session: HttpSession
-    beforeEach { session = FakeHttpSession.create(FakeContext()) }
+class FakeHttpSessionTest {
+    private lateinit var session: HttpSession
+    @BeforeEach fun setup() {
+        session = FakeHttpSession.create(FakeContext())
+    }
 
-    test("attributes") {
+    @Test fun attributes() {
         expect(null) { session.getAttribute("foo") }
         expectList() { session.attributeNames.toList() }
         session.setAttribute("foo", "bar")
@@ -31,66 +30,71 @@ class FakeHttpSessionTest : DynaTest({
         expectList() { session.attributeNames.toList() }
     }
 
-    test("serializable") {
+    @Test fun serializable() {
         session.setAttribute("foo", "bar")
         (session as Serializable).cloneBySerialization()
     }
 
-    group("invalidate") {
-        beforeGroup { FakeHttpEnvironment.strictSessionValidityChecks = true }
-        afterGroup { FakeHttpEnvironment.strictSessionValidityChecks = false }
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @Nested inner class invalidate {
+        @BeforeAll fun setStrictValidityChecks() {
+            FakeHttpEnvironment.strictSessionValidityChecks = true
+        }
+        @AfterAll fun revertStrictValidityChecks() {
+            FakeHttpEnvironment.strictSessionValidityChecks = false
+        }
 
-        test("smoke") {
+        @Test fun smoke() {
             session.invalidate()
             expect(false) { (session as FakeHttpSession).isValid }
         }
-        test("calling invalidate() second time throws") {
+        @Test fun `calling invalidate() second time throws`() {
             session.invalidate()
-            expectThrows(IllegalStateException::class) {
+            assertThrows<IllegalStateException> {
                 session.invalidate()
             }
         }
-        test("getAttribute() succeeds on invalidated session") {
+        @Test fun `getAttribute() succeeds on invalidated session`() {
             session.invalidate()
-            expectThrows(IllegalStateException::class) {
+            assertThrows<IllegalStateException> {
                 session.getAttribute("foo")
             }
         }
-        test("getId() succeeds on invalidated session") {
+        @Test fun `getId() succeeds on invalidated session`() {
             session.invalidate()
             session.id
         }
-        test("getServletContext() succeeds on invalidated session") {
+        @Test fun `getServletContext() succeeds on invalidated session`() {
             session.invalidate()
             session.servletContext
         }
-        test("maxActiveInterval succeeds on invalidated session") {
+        @Test fun `maxActiveInterval succeeds on invalidated session`() {
             session.invalidate()
             session.maxInactiveInterval = session.maxInactiveInterval + 1
         }
-        test("getCreationTime() fails on invalidated session") {
+        @Test fun `getCreationTime() fails on invalidated session`() {
             session.invalidate()
-            expectThrows(IllegalStateException::class) {
+            assertThrows<IllegalStateException> {
                 session.creationTime
             }
         }
-        test("getLastAccessedTime() fails on invalidated session") {
+        @Test fun `getLastAccessedTime() fails on invalidated session`() {
             session.invalidate()
-            expectThrows(IllegalStateException::class) {
+            assertThrows<IllegalStateException> {
                 session.lastAccessedTime
             }
         }
-        test("getAttributeNames() fails on invalidated session") {
+        @Test fun `getAttributeNames() fails on invalidated session`() {
             session.invalidate()
-            expectThrows(IllegalStateException::class) {
+            assertThrows<IllegalStateException> {
                 session.attributeNames
             }
         }
-        test("getValueNames() fails on invalidated session") {
+        @Test fun `getValueNames() fails on invalidated session`() {
             session.invalidate()
-            expectThrows(IllegalStateException::class) {
+            assertThrows<IllegalStateException> {
                 session.valueNames
             }
         }
     }
-})
+}
