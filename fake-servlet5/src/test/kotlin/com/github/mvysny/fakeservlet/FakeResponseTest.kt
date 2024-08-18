@@ -1,35 +1,35 @@
 package com.github.mvysny.fakeservlet
 
-import com.github.mvysny.dynatest.DynaTest
-import com.github.mvysny.dynatest.expectList
-import com.github.mvysny.dynatest.expectThrows
 import jakarta.servlet.http.Cookie
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.expect
 
-class FakeResponseTest : DynaTest({
-    lateinit var request: FakeResponse
-    beforeEach { request = FakeResponse() }
+class FakeResponseTest {
+    private lateinit var request: FakeResponse
+    @BeforeEach fun setup() { request = FakeResponse() }
 
-    test("smoke") {
+    @Test fun smoke() {
         // call stuff and make sure it won't throw
         request.isCommitted
         request.reset()
         request.resetBuffer()
     }
 
-    test("writer") {
+    @Test fun writer() {
         val writer = request.writer
         writer.print("Hello, world!")
         writer.flush()
         expect("Hello, world!") { request.getBufferAsString() }
     }
 
-    test("output stream") {
+    @Test fun outputStream() {
         request.outputStream.println("Hello, world!")
         expect("Hello, world!\r\n") { request.getBufferAsString() }
     }
 
-    test("headers") {
+    @Test fun headers() {
         expect(null) { request.getHeader("foo") }
         expectList() { request.headerNames.toList() }
         expectList() { request.getHeaders("foo").toList() }
@@ -43,12 +43,13 @@ class FakeResponseTest : DynaTest({
         expectList("bar", "baz") { request.getHeaders("foo").toList() }
     }
 
-    test("cookies") {
+    @Test fun cookies() {
         request.cookies += Cookie("foo", "bar")
         expect("bar") { request.getCookie("foo").value }
         expect(null) { request.findCookie("qqq") }
-        expectThrows(IllegalStateException::class, "no such cookie with name baz. Available cookies: foo=bar") {
+        val ex = assertThrows<IllegalStateException> {
             request.getCookie("baz")
         }
+        expect("no such cookie with name baz. Available cookies: foo=bar") { ex.message }
     }
-})
+}
