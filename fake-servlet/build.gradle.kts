@@ -3,7 +3,7 @@ dependencies {
     api(kotlin("stdlib-jdk8"))
     implementation(libs.slf4j.api)
 
-    testImplementation(libs.dynatest)
+    testImplementation(kotlin("test"))
     testImplementation(libs.junit)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation(libs.slf4j.simple)
