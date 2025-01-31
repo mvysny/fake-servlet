@@ -12,7 +12,7 @@ defaultTasks("clean", "build")
 
 allprojects {
     group = "com.github.mvysny.fake-servlet"
-    version = "1.2"
+    version = "1.3-SNAPSHOT"
 
     repositories {
         mavenCentral()
