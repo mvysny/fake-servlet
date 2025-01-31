@@ -1,6 +1,5 @@
 dependencies {
     api(libs.javax.servletapi)
-    api(kotlin("stdlib-jdk8"))
     implementation(libs.slf4j.api)
 
     testImplementation(kotlin("test"))
