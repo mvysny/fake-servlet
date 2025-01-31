@@ -1,6 +1,6 @@
 [versions]
 # https://repo1.maven.org/maven2/org/slf4j/slf4j-api/
-slf4j = "2.0.13"
+slf4j = "2.0.16"
 
 [libraries]
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
