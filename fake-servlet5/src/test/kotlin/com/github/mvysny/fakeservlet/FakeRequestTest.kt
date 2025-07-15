@@ -2,6 +2,7 @@ package com.github.mvysny.fakeservlet
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.expect
 
 /**
@@ -88,5 +89,19 @@ class FakeRequestTest {
 
     @Test fun changeSessionId() {
         expect(false) { request.session.id == request.changeSessionId() }
+    }
+
+    @Test fun `inputStream fail when content not set`() {
+        assertThrows<IllegalStateException> { request.inputStream }
+    }
+
+    @Test fun `inputStream provides correct content`() {
+        request.content = "Foo".toByteArray()
+        expect("Foo") { request.inputStream.readBytes().toString(Charsets.UTF_8) }
+    }
+
+    @Test fun `inputStream provides correct content 2`() {
+        request.content = ByteArray(500_000) { it.toByte() }
+        expect(request.content!!.toList()) { request.inputStream.readBytes().toList() }
     }
 }
