@@ -9,8 +9,8 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    testImplementation("com.github.mvysny.fake-servlet:fake-servlet:1.0") // for javax.servlet
-    testImplementation("com.github.mvysny.fake-servlet:fake-servlet5:1.0") // for javaee.servlet
+    testImplementation("com.github.mvysny.fake-servlet:fake-servlet:1.2") // for javax.servlet
+    testImplementation("com.github.mvysny.fake-servlet:fake-servlet5:1.2") // for javaee.servlet
 }
 ```
 
@@ -25,7 +25,7 @@ to your `pom.xml`:
 		<dependency>
 			<groupId>com.github.mvysny.fake-servlet</groupId>
 			<artifactId>fake-servlet</artifactId>
-			<version>1.0</version>
+			<version>1.2</version>
 			<scope>test</scope>
 		</dependency>
     </dependencies>
