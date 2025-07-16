@@ -9,15 +9,14 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    testImplementation("com.github.mvysny.fake-servlet:fake-servlet:1.2") // for javax.servlet
-    testImplementation("com.github.mvysny.fake-servlet:fake-servlet5:1.2") // for javaee.servlet
+    testImplementation("com.github.mvysny.fake-servlet:fake-servlet:1.3") // for javax.servlet
+    testImplementation("com.github.mvysny.fake-servlet:fake-servlet5:1.3") // for javaee.servlet
 }
 ```
 
 > Note: obtain the newest version from the tag name above
 
-For Maven it's really easy: the jar is published on Maven Central, so all you need to do is to add the dependency
-to your `pom.xml`:
+Maven: add the dependencyto your `pom.xml`:
 
 ```xml
 <project>
@@ -25,7 +24,7 @@ to your `pom.xml`:
 		<dependency>
 			<groupId>com.github.mvysny.fake-servlet</groupId>
 			<artifactId>fake-servlet</artifactId>
-			<version>1.2</version>
+			<version>1.3</version>
 			<scope>test</scope>
 		</dependency>
     </dependencies>
