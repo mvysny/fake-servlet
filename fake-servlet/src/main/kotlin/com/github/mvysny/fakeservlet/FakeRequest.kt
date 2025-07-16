@@ -9,8 +9,17 @@ import javax.servlet.http.*
 
 public open class FakeRequest(private var session: HttpSession) : HttpServletRequest {
 
+    /**
+     * Returned by [getInputStream].
+     */
+    public var content: ByteArray? = null
+
+    /**
+     * Returns [content]. Make sure to initialize [content] first.
+     */
     override fun getInputStream(): ServletInputStream {
-        throw UnsupportedOperationException("not implemented")
+        val stream = checkNotNull(content) { "Populate FakeRequest.content first" } .inputStream()
+        return ServletInputStreamImpl(stream)
     }
 
     override fun startAsync(): AsyncContext {
@@ -190,9 +199,7 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
      */
     override fun getUserPrincipal(): Principal? = userPrincipalInt
 
-    override fun getReader(): BufferedReader {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getReader(): BufferedReader = getInputStream().bufferedReader()
 
     override fun getLocales(): Enumeration<Locale> = Collections.enumeration(listOf(locale))
 

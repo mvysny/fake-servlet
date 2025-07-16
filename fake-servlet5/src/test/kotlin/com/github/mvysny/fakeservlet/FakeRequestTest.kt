@@ -104,4 +104,14 @@ class FakeRequestTest {
         request.content = ByteArray(500_000) { it.toByte() }
         expect(request.content!!.toList()) { request.inputStream.readBytes().toList() }
     }
+
+    @Test fun `reader provides correct content`() {
+        request.content = "Foo".toByteArray()
+        expect("Foo") { request.reader.readText() }
+    }
+
+    @Test fun `reader provides empty content`() {
+        request.content = ByteArray(0)
+        expect("") { request.reader.readText() }
+    }
 }

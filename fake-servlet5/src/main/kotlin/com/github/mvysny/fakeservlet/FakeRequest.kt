@@ -40,7 +40,7 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
         characterEncodingInt = env
     }
 
-    public val parameters: MutableMap<String, Array<String>> = mutableMapOf<String, Array<String>>()
+    public val parameters: MutableMap<String, Array<String>> = mutableMapOf()
 
     override fun getParameterValues(name: String): Array<String>? = parameters[name]
 
@@ -199,9 +199,7 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
      */
     override fun getUserPrincipal(): Principal? = userPrincipalInt
 
-    override fun getReader(): BufferedReader {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getReader(): BufferedReader = inputStream.bufferedReader()
 
     override fun getLocales(): Enumeration<Locale> = Collections.enumeration(listOf(locale))
 
