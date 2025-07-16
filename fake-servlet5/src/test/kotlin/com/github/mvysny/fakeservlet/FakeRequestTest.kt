@@ -110,6 +110,12 @@ class FakeRequestTest {
         expect("Foo") { request.reader.readText() }
     }
 
+    @Test fun `multiple reader retrievals provides the same instance`() {
+        request.content = "Foo".toByteArray()
+        expect('F'.code) { request.reader.read() }
+        expect('o'.code) { request.reader.read() }
+    }
+
     @Test fun `reader provides empty content`() {
         request.content = ByteArray(0)
         expect("") { request.reader.readText() }
