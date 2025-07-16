@@ -10,16 +10,28 @@ import jakarta.servlet.http.*
 public open class FakeRequest(private var session: HttpSession) : HttpServletRequest {
 
     /**
-     * Returned by [getInputStream].
+     * Returned by [getInputStream] or [getReader].
      */
     public var content: ByteArray? = null
+        public set(value) {
+            field = value
+            contentStream = null
+            contentReader = null
+        }
+
+    private var contentStream: ServletInputStream? = null
+    private var contentReader: BufferedReader? = null
 
     /**
      * Returns [content]. Make sure to initialize [content] first.
      */
     override fun getInputStream(): ServletInputStream {
-        val stream = checkNotNull(content) { "Populate FakeRequest.content first" } .inputStream()
-        return ServletInputStreamImpl(stream)
+        check(contentReader == null) { "getReader() was already called" }
+        if (contentStream == null) {
+            val stream = checkNotNull(content) { "Populate FakeRequest.content first" } .inputStream()
+            contentStream = ServletInputStreamImpl(stream)
+        }
+        return contentStream!!
     }
 
     override fun startAsync(): AsyncContext {
@@ -199,7 +211,14 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
      */
     override fun getUserPrincipal(): Principal? = userPrincipalInt
 
-    override fun getReader(): BufferedReader = inputStream.bufferedReader()
+    override fun getReader(): BufferedReader {
+        check(contentStream == null) { "getInputStream() has already been called" }
+        if (contentReader == null) {
+            contentReader = inputStream.bufferedReader()
+            contentStream = null
+        }
+        return contentReader!!
+    }
 
     override fun getLocales(): Enumeration<Locale> = Collections.enumeration(listOf(locale))
 
