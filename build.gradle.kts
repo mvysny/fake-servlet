@@ -37,12 +37,12 @@ subprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     tasks.withType<KotlinCompile> {
-        compilerOptions.jvmTarget = JvmTarget.JVM_1_8
+        compilerOptions.jvmTarget = JvmTarget.JVM_17
     }
 
     // creates a reusable function which configures proper deployment to Maven Central
@@ -95,11 +95,6 @@ subprojects {
             sign(publishing.publications["mavenJava"])
         }
     }
-}
-
-if (JavaVersion.current() > JavaVersion.VERSION_11 && gradle.startParameter.taskNames.contains("publish")) {
-    throw GradleException("Release fake-servlet 1.x with JDK 11 or lower; current JDK is ${JavaVersion.current()}")
-    // otherwise Kotlin will use Stream.toList() from JDK 15+, which will cause fake-servlet not working on JDK 14-
 }
 
 nexusPublishing {
