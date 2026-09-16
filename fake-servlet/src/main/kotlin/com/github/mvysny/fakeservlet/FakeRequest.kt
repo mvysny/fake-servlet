@@ -163,7 +163,15 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
 
     override fun getRequestURI(): String = "/"
 
-    override fun getRequestDispatcher(path: String?): RequestDispatcher? = null
+    /**
+     * Resolves a relative [path] against [getServletPath] + [getPathInfo], as containers do.
+     */
+    override fun getRequestDispatcher(path: String?): RequestDispatcher? {
+        if (path == null) return null
+        if (path.startsWith("/")) return FakeRequestDispatcher(path)
+        val dir = (servletPath + (pathInfo ?: "")).substringBeforeLast('/', "")
+        return FakeRequestDispatcher("$dir/$path")
+    }
 
     public var isUserInRole: (Principal, role: String) -> Boolean = { _, _ ->  false }
 

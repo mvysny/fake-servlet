@@ -78,7 +78,17 @@ class FakeRequestTest {
         expect(false) { request.isRequestedSessionIdFromURL }
         expect(request.session.servletContext) { request.servletContext }
         expect(null) { request.pathTranslated }
-        expect(null) { request.getRequestDispatcher("/foo") }
+    }
+
+    @Test fun `getRequestDispatcher() resolves relative paths`() {
+        expect(null) { request.getRequestDispatcher(null) }
+        expect("/foo/bar") { (request.getRequestDispatcher("/foo/bar") as FakeRequestDispatcher).target }
+        expect("/bar") { (request.getRequestDispatcher("bar") as FakeRequestDispatcher).target }
+        val nested = object : FakeRequest(request.session) {
+            override fun getServletPath(): String = "/app"
+            override fun getPathInfo(): String = "/foo/baz"
+        }
+        expect("/app/foo/bar") { (nested.getRequestDispatcher("bar") as FakeRequestDispatcher).target }
     }
 
     @Test fun `async is not supported`() {

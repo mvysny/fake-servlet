@@ -130,7 +130,8 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getResourceAsStream(path: String): InputStream? = getResource(path)?.openStream()
 
-    override fun getNamedDispatcher(name: String?): RequestDispatcher? = null
+    override fun getNamedDispatcher(name: String?): RequestDispatcher? =
+        name?.takeIf { _servlets.containsKey(it) }?.let { FakeRequestDispatcher(it) }
 
     override fun getFilterRegistrations(): MutableMap<String, out FilterRegistration> = HashMap(filters)
 
@@ -235,7 +236,8 @@ public open class FakeContext : ServletContext, Serializable {
      */
     override fun getContext(uripath: String): ServletContext? = if (uripath.startsWith("/")) this else null
 
-    override fun getRequestDispatcher(path: String?): RequestDispatcher? = null
+    override fun getRequestDispatcher(path: String?): RequestDispatcher? =
+        path?.takeIf { it.startsWith("/") }?.let { FakeRequestDispatcher(it) }
 
     private val attributes = ConcurrentHashMap<String, Any>()
 

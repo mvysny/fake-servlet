@@ -59,6 +59,16 @@ public open class FakeResponse : HttpServletResponse {
 
     public val buffer: ByteArrayOutputStream = ByteArrayOutputStream()
 
+    /**
+     * The target of the last [FakeRequestDispatcher.forward].
+     */
+    public var forwardedUrl: String? = null
+
+    /**
+     * The targets of [FakeRequestDispatcher.include], in call order.
+     */
+    public val includedUrls: MutableList<String> = CopyOnWriteArrayList()
+
     public var _bufferSize: Int = 4096
 
     override fun setBufferSize(size: Int) {

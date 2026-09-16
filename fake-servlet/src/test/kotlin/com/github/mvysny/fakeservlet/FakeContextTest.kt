@@ -129,8 +129,15 @@ class FakeContextTest {
         expectList() { ctx.servletNames.toList() }
         expect(setOf()) { ctx.getResourcePaths("/") }
         expect(30) { ctx.sessionTimeout }
-        expect(null) { ctx.getRequestDispatcher("/foo") }
+    }
+
+    @Test fun dispatchers() {
+        expect("/foo") { (ctx.getRequestDispatcher("/foo") as FakeRequestDispatcher).target }
+        expect(null) { ctx.getRequestDispatcher("foo") }
+        expect(null) { ctx.getRequestDispatcher(null) }
         expect(null) { ctx.getNamedDispatcher("foo") }
+        ctx.addServlet("foo", TestServlet::class.java)
+        expect("foo") { (ctx.getNamedDispatcher("foo") as FakeRequestDispatcher).target }
     }
 
     @Test fun getContext() {
