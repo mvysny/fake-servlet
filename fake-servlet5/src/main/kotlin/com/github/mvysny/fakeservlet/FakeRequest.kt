@@ -35,11 +35,11 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
     }
 
     override fun startAsync(): AsyncContext {
-        throw UnsupportedOperationException("Unsupported")
+        throw IllegalStateException("async not supported in mock environment")
     }
 
     override fun startAsync(servletRequest: ServletRequest?, servletResponse: ServletResponse?): AsyncContext {
-        throw UnsupportedOperationException("Unsupported")
+        throw IllegalStateException("async not supported in mock environment")
     }
 
     override fun getProtocol(): String = "HTTP/1.1"
@@ -61,17 +61,13 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
     override fun getContentLengthLong(): Long = -1
 
     @Deprecated("Deprecated in Java")
-    override fun getRealPath(path: String?): String {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getRealPath(path: String?): String? = path?.let { servletContext.getRealPath(it) }
 
     override fun login(username: String?, password: String?) {
         throw UnsupportedOperationException("not implemented")
     }
 
-    override fun isRequestedSessionIdValid(): Boolean {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun isRequestedSessionIdValid(): Boolean = (session as? FakeHttpSession)?.isValid ?: true
 
     /**
      * Returns [FakeHttpEnvironment.serverPort].
@@ -139,8 +135,11 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
 
     override fun getScheme(): String = "http"
 
+    /**
+     * Clears [userPrincipalInt]. [getAuthType] keeps returning [FakeHttpEnvironment.authType].
+     */
     override fun logout() {
-        throw UnsupportedOperationException("not implemented")
+        userPrincipalInt = null
     }
 
     override fun getLocalName(): String = "localhost"
@@ -151,9 +150,7 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
 
     override fun authenticate(response: HttpServletResponse): Boolean = FakeHttpEnvironment.authenticator(response)
 
-    override fun getPathTranslated(): String {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getPathTranslated(): String? = pathInfo?.let { servletContext.getRealPath(it) }
 
     override fun getIntHeader(name: String): Int = getHeader(name)?.toInt() ?: -1
 
@@ -166,9 +163,7 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
 
     override fun getRequestURI(): String = "/"
 
-    override fun getRequestDispatcher(path: String?): RequestDispatcher {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getRequestDispatcher(path: String?): RequestDispatcher? = null
 
     public var isUserInRole: (Principal, role: String) -> Boolean = { _, _ ->  false }
 
@@ -182,7 +177,7 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
 
     override fun getPathInfo(): String? = null
 
-    override fun getRemoteUser(): String? = null
+    override fun getRemoteUser(): String? = userPrincipal?.name
 
     public var cookiesInt: Array<Cookie>? = null
 

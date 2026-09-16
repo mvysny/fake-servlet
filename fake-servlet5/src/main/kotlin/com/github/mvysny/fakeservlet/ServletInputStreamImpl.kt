@@ -11,7 +11,7 @@ public class ServletInputStreamImpl(public val delegate: ByteArrayInputStream) :
     override fun isFinished(): Boolean = delegate.available() <= 0
     override fun isReady(): Boolean = true
     override fun setReadListener(readListener: ReadListener) {
-        throw UnsupportedOperationException("Unsupported")
+        throw IllegalStateException("async not supported in mock environment")
     }
     override fun read(): Int = delegate.read()
     override fun read(b: ByteArray): Int = delegate.read(b)

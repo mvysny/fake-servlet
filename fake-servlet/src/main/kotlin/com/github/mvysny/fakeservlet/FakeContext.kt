@@ -10,10 +10,13 @@ import java.net.URLConnection
 import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
-import java.util.concurrent.CopyOnWriteArrayList
 import javax.servlet.*
 import javax.servlet.descriptor.JspConfigDescriptor
+import javax.servlet.http.HttpSessionAttributeListener
+import javax.servlet.http.HttpSessionIdListener
+import javax.servlet.http.HttpSessionListener
+import java.util.concurrent.ConcurrentMap
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.collections.HashMap
 
 public open class FakeContext : ServletContext, Serializable {
@@ -24,9 +27,7 @@ public open class FakeContext : ServletContext, Serializable {
         return null
     }
 
-    override fun <T : Servlet?> createServlet(clazz: Class<T>?): T {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun <T : Servlet?> createServlet(clazz: Class<T>): T = instantiate(clazz)
 
     override fun getEffectiveMajorVersion(): Int = 4
 
@@ -76,16 +77,23 @@ public open class FakeContext : ServletContext, Serializable {
         return null
     }
 
+    /**
+     * Listeners registered via [addListener]. Recorded only: the fake never fires them.
+     */
+    public val listeners: MutableList<EventListener> = CopyOnWriteArrayList()
+
     override fun addListener(className: String) {
-        throw UnsupportedOperationException("not implemented")
+        @Suppress("UNCHECKED_CAST")
+        addListener(classLoader.loadClass(className) as Class<out EventListener>)
     }
 
     override fun <T : EventListener?> addListener(t: T) {
-        throw UnsupportedOperationException("not implemented")
+        requireSupportedListener(t!!.javaClass)
+        listeners.add(t)
     }
 
     override fun addListener(listenerClass: Class<out EventListener>) {
-        throw UnsupportedOperationException("not implemented")
+        addListener(createListener(listenerClass))
     }
 
     override fun getClassLoader(): ClassLoader = Thread.currentThread().contextClassLoader
@@ -122,9 +130,7 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getResourceAsStream(path: String): InputStream? = getResource(path)?.openStream()
 
-    override fun getNamedDispatcher(name: String?): RequestDispatcher {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getNamedDispatcher(name: String?): RequestDispatcher? = null
 
     override fun getFilterRegistrations(): MutableMap<String, out FilterRegistration> = HashMap(filters)
 
@@ -135,13 +141,17 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getMimeType(file: String): String? = URLConnection.guessContentTypeFromName(file)
 
+    /**
+     * Roles declared via [declareRoles].
+     */
+    public val declaredRoles: MutableSet<String> = mutableSetOf()
+
     override fun declareRoles(vararg roleNames: String) {
-        throw UnsupportedOperationException("not implemented")
+        require(roleNames.none { it.isEmpty() }) { "roleNames: empty role name in ${roleNames.toList()}" }
+        declaredRoles.addAll(roleNames)
     }
 
-    override fun <T : Filter?> createFilter(clazz: Class<T>): T {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun <T : Filter?> createFilter(clazz: Class<T>): T = instantiate(clazz)
 
     /**
      * [getRealPath] will only resolve `path` in these folders.
@@ -220,13 +230,12 @@ public open class FakeContext : ServletContext, Serializable {
         responseCharacterEncoding = encoding
     }
 
-    override fun getContext(uripath: String): ServletContext {
-        throw UnsupportedOperationException("not implemented")
-    }
+    /**
+     * Returns this context for any absolute [uripath]: it is the root web application, the only one there is.
+     */
+    override fun getContext(uripath: String): ServletContext? = if (uripath.startsWith("/")) this else null
 
-    override fun getRequestDispatcher(path: String?): RequestDispatcher {
-        throw UnsupportedOperationException("not implemented")
-    }
+    override fun getRequestDispatcher(path: String?): RequestDispatcher? = null
 
     private val attributes = ConcurrentHashMap<String, Any>()
 
@@ -238,8 +247,21 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getServletRegistration(servletName: String): ServletRegistration? = _servlets[servletName]
 
-    override fun <T : EventListener?> createListener(clazz: Class<T>?): T {
-        throw UnsupportedOperationException("not implemented")
+    override fun <T : EventListener?> createListener(clazz: Class<T>): T {
+        requireSupportedListener(clazz)
+        return instantiate(clazz)
+    }
+
+    private fun <T> instantiate(clazz: Class<T>): T = try {
+        clazz.getDeclaredConstructor().newInstance()
+    } catch (e: ReflectiveOperationException) {
+        throw ServletException("Failed to instantiate $clazz", e)
+    }
+
+    private fun requireSupportedListener(clazz: Class<*>) {
+        require(supportedListenerTypes.any { it.isAssignableFrom(clazz) }) {
+            "$clazz implements none of the supported listener interfaces $supportedListenerTypes"
+        }
     }
 
     private val _servlets = ConcurrentHashMap<String, FakeServletRegistration>()
@@ -274,6 +296,16 @@ public open class FakeContext : ServletContext, Serializable {
     public companion object {
         @JvmStatic
         private val log = LoggerFactory.getLogger(FakeContext::class.java)
+
+        private val supportedListenerTypes: List<Class<out EventListener>> = listOf(
+            ServletContextListener::class.java,
+            ServletContextAttributeListener::class.java,
+            ServletRequestListener::class.java,
+            ServletRequestAttributeListener::class.java,
+            HttpSessionAttributeListener::class.java,
+            HttpSessionIdListener::class.java,
+            HttpSessionListener::class.java,
+        )
     }
 }
 

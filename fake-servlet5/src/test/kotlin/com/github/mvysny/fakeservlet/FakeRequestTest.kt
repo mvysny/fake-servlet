@@ -77,6 +77,27 @@ class FakeRequestTest {
         expect(false) { request.isRequestedSessionIdFromCookie }
         expect(false) { request.isRequestedSessionIdFromURL }
         expect(request.session.servletContext) { request.servletContext }
+        expect(null) { request.pathTranslated }
+        expect(null) { request.getRequestDispatcher("/foo") }
+    }
+
+    @Test fun `async is not supported`() {
+        assertThrows<IllegalStateException> { request.startAsync() }
+        assertThrows<IllegalStateException> { request.startAsync(request, FakeResponse()) }
+    }
+
+    @Suppress("DEPRECATION")
+    @Test fun `getRealPath() delegates to the context`() {
+        (request.servletContext as FakeContext).realPathRoots = listOf("src/test/webapp")
+        expect(request.servletContext.getRealPath("/VAADIN/themes/default/img/1.txt")) { request.getRealPath("/VAADIN/themes/default/img/1.txt") }
+        expect(null) { request.getRealPath("/nonexisting.txt") }
+        expect(null) { request.getRealPath(null) }
+    }
+
+    @Test fun isRequestedSessionIdValid() {
+        expect(true) { request.isRequestedSessionIdValid }
+        request.session.invalidate()
+        expect(false) { request.isRequestedSessionIdValid }
     }
 
     @Test fun `values from FakeHttpEnvironment`() {
@@ -220,8 +241,17 @@ class FakeRequestTest {
 
     @Test fun principal() {
         expect(null) { request.userPrincipal }
+        expect(null) { request.remoteUser }
         request.userPrincipalInt = MockPrincipal("foo")
         expect(MockPrincipal("foo")) { request.userPrincipal }
+        expect("foo") { request.remoteUser }
+    }
+
+    @Test fun logout() {
+        request.userPrincipalInt = MockPrincipal("foo")
+        request.logout()
+        expect(null) { request.userPrincipal }
+        expect(null) { request.remoteUser }
     }
 
     @Test fun isUserInRole() {

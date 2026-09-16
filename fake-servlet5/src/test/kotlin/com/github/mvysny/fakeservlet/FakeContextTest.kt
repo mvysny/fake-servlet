@@ -1,10 +1,14 @@
 package com.github.mvysny.fakeservlet
 
 import jakarta.servlet.*
+import jakarta.servlet.http.HttpSessionEvent
+import jakarta.servlet.http.HttpSessionListener
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.io.File
+import java.util.EventListener
+import kotlin.test.assertIs
 import kotlin.test.expect
 
 class FakeContextTest {
@@ -125,6 +129,42 @@ class FakeContextTest {
         expectList() { ctx.servletNames.toList() }
         expect(setOf()) { ctx.getResourcePaths("/") }
         expect(30) { ctx.sessionTimeout }
+        expect(null) { ctx.getRequestDispatcher("/foo") }
+        expect(null) { ctx.getNamedDispatcher("foo") }
+    }
+
+    @Test fun getContext() {
+        expect(ctx) { ctx.getContext("/") }
+        expect(ctx) { ctx.getContext("/other") }
+        expect(null) { ctx.getContext("other") }
+    }
+
+    @Test fun `create servlet, filter and listener`() {
+        assertIs<TestServlet>(ctx.createServlet(TestServlet::class.java))
+        assertIs<TestFilter>(ctx.createFilter(TestFilter::class.java))
+        assertIs<TestListener>(ctx.createListener(TestListener::class.java))
+        assertThrows<ServletException> { ctx.createServlet(NoDefaultConstructorServlet::class.java) }
+        assertThrows<IllegalArgumentException> { ctx.createListener(NotAListener::class.java) }
+    }
+
+    @Test fun addListener() {
+        expectList() { ctx.listeners }
+        val listener = TestListener()
+        ctx.addListener(listener)
+        ctx.addListener(TestListener::class.java)
+        ctx.addListener(TestListener::class.java.name)
+        expect(3) { ctx.listeners.size }
+        expect(listener) { ctx.listeners[0] }
+        expect(true) { ctx.listeners.all { it is TestListener } }
+        assertThrows<IllegalArgumentException> { ctx.addListener(NotAListener()) }
+        assertThrows<ClassNotFoundException> { ctx.addListener("com.example.NoSuchListener") }
+    }
+
+    @Test fun declareRoles() {
+        expect(setOf()) { ctx.declaredRoles }
+        ctx.declareRoles("admin", "user")
+        expect(setOf("admin", "user")) { ctx.declaredRoles }
+        assertThrows<IllegalArgumentException> { ctx.declareRoles("") }
     }
 
     @Test fun `session timeout`() {
@@ -236,4 +276,14 @@ class TestServlet : GenericServlet() {
 
 class TestFilter : Filter {
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {}
+}
+
+class TestListener : HttpSessionListener {
+    override fun sessionCreated(se: HttpSessionEvent) {}
+}
+
+class NotAListener : EventListener
+
+class NoDefaultConstructorServlet(val name: String) : GenericServlet() {
+    override fun service(req: ServletRequest, res: ServletResponse) {}
 }

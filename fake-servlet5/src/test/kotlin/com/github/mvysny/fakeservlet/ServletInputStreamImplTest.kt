@@ -46,8 +46,8 @@ class ServletInputStreamImplTest {
         expect("ab\n") { buf.decodeToString(0, 3) }
     }
 
-    @Test fun `setReadListener() is unsupported`() {
-        assertThrows<UnsupportedOperationException> {
+    @Test fun `setReadListener() fails since async is never started`() {
+        assertThrows<IllegalStateException> {
             stream.setReadListener(object : ReadListener {
                 override fun onDataAvailable() {}
                 override fun onAllDataRead() {}

@@ -58,7 +58,7 @@ public object FakeHttpEnvironment {
     /**
      * [FakeRequest.authenticate]
      */
-    public var authenticator: (HttpServletResponse) -> Boolean = { throw UnsupportedOperationException("not implemented. Set MockHttpEnvironment.authenticator to override") }
+    public var authenticator: (HttpServletResponse) -> Boolean = { throw UnsupportedOperationException("not implemented. Set FakeHttpEnvironment.authenticator to override") }
 
     /**
      * According to the servlet spec, HttpSession functions should fail on an invalidated session.
