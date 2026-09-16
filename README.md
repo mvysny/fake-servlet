@@ -1,6 +1,6 @@
 # Fake Servlet
 
-A fake implementation of both `javax.servlet` and `javaee.servlet` APIs. Requires Java 8+. Written in Kotlin.
+A fake implementation of both `javax.servlet` and `jakarta.servlet` APIs. Requires Java 17+. Written in Kotlin.
 
 To start, just add the following lines into your Gradle `build.gradle` file:
 

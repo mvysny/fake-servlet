@@ -97,6 +97,13 @@ subprojects {
     }
 }
 
+// checks the doc layer (AGENTS.md, design/); needs bash + git, hence Linux only - CI runs it in a job of its own
+val verifyDesignTripwires by tasks.registering(Exec::class) {
+    onlyIf { System.getProperty("os.name").lowercase().contains("linux") }
+    commandLine("design/verify_design_tripwires.sh")
+}
+tasks.check { dependsOn(verifyDesignTripwires) }
+
 nexusPublishing {
     repositories {
         // see https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#configuration
