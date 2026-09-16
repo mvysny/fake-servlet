@@ -23,7 +23,7 @@ public open class FakeRegistration(
 
     final override fun setInitParameters(initParameters: MutableMap<String, String>): MutableSet<String> {
         val result = mutableSetOf<String>()
-        initParameters.forEach { (key, value) -> if (!setInitParameter(key, value)) result.add(value) }
+        initParameters.forEach { (key, value) -> if (!setInitParameter(key, value)) result.add(key) }
         return result
     }
 

@@ -27,7 +27,7 @@ public open class FakeContext : ServletContext, Serializable {
         throw UnsupportedOperationException("not implemented")
     }
 
-    override fun getEffectiveMajorVersion(): Int = 3
+    override fun getEffectiveMajorVersion(): Int = 5
 
     override fun getResource(path: String): URL? {
         // for example @HtmlImport("frontend://reviews-list.html") will expect the resource to be present in the war file,
@@ -91,7 +91,7 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getAttributeNames(): Enumeration<String> = attributes.keys()
 
-    override fun getMajorVersion(): Int = 3
+    override fun getMajorVersion(): Int = 5
 
     override fun log(msg: String) {
         log.error(msg)
@@ -132,7 +132,7 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getDefaultSessionTrackingModes(): Set<SessionTrackingMode> = setOf(SessionTrackingMode.COOKIE, SessionTrackingMode.URL)
 
-    override fun getMimeType(file: String): String = URLConnection.guessContentTypeFromName(file) ?: "application/octet-stream"
+    override fun getMimeType(file: String): String? = URLConnection.guessContentTypeFromName(file)
 
     override fun declareRoles(vararg roleNames: String) {
         throw UnsupportedOperationException("not implemented")
@@ -234,7 +234,7 @@ public open class FakeContext : ServletContext, Serializable {
         attributes.putOrRemove(name, value)
     }
 
-    override fun getServletRegistration(servletName: String): ServletRegistration? = null
+    override fun getServletRegistration(servletName: String): ServletRegistration? = _servlets[servletName]
 
     override fun <T : EventListener?> createListener(clazz: Class<T>?): T {
         throw UnsupportedOperationException("not implemented")
@@ -259,7 +259,7 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getEffectiveMinorVersion(): Int = 0
 
-    override fun getServletRegistrations(): MutableMap<String, out ServletRegistration> = HashMap()
+    override fun getServletRegistrations(): MutableMap<String, out ServletRegistration> = HashMap(_servlets)
 
     override fun getResourcePaths(path: String?): MutableSet<String> = mutableSetOf()
 

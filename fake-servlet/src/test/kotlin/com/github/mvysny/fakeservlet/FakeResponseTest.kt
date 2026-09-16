@@ -24,6 +24,51 @@ class FakeResponseTest {
         expect("Hello, world!") { request.getBufferAsString() }
     }
 
+    @Test fun `writer needs no flush`() {
+        request.writer.print("Hello, ")
+        request.writer.print('w')
+        request.writer.write("orld!".toCharArray())
+        expect("Hello, world!") { request.getBufferAsString() }
+    }
+
+    @Test fun `writer is the same instance`() {
+        expect(request.writer) { request.writer }
+    }
+
+    @Test fun `setCharacterEncoding() is ignored after getWriter()`() {
+        request.writer
+        request.characterEncoding = "UTF-8"
+        expect("ISO-8859-1") { request.characterEncoding }
+    }
+
+    @Test fun `flushBuffer() commits and keeps the content`() {
+        request.writer.print("Hello")
+        request.flushBuffer()
+        expect(true) { request.isCommitted }
+        expect("Hello") { request.getBufferAsString() }
+    }
+
+    @Test fun sendError() {
+        request.sendError(404)
+        expect(404) { request.status }
+        expect(true) { request.isCommitted }
+    }
+
+    @Test fun `sendError() with message`() {
+        request.sendError(500, "boom")
+        expect(500) { request.status }
+        expect(true) { request.isCommitted }
+    }
+
+    @Test fun sendRedirect() {
+        request.writer.print("discarded")
+        request.sendRedirect("/login")
+        expect(302) { request.status }
+        expect("/login") { request.getHeader("Location") }
+        expect(true) { request.isCommitted }
+        expect("") { request.getBufferAsString() }
+    }
+
     @Test fun outputStream() {
         request.outputStream.println("Hello, world!")
         expect("Hello, world!\r\n") { request.getBufferAsString() }

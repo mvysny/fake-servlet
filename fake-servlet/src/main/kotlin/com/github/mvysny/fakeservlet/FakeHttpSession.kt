@@ -26,7 +26,7 @@ public open class FakeHttpSession(
 
     public val isValid: Boolean get() = valid
 
-    public constructor(session: HttpSession) : this(session.id, session.servletContext, session.lastAccessedTime, session.maxInactiveInterval) {
+    public constructor(session: HttpSession) : this(session.id, session.servletContext, session.creationTime, session.maxInactiveInterval) {
         copyAttributes(session)
     }
 
@@ -41,9 +41,12 @@ public open class FakeHttpSession(
 
     override fun getId(): String = sessionId
 
+    /**
+     * Returns [creationTime]: the fake never sees a subsequent request.
+     */
     override fun getLastAccessedTime(): Long {
         checkValid()
-        return 0
+        return creationTime
     }
 
     override fun getServletContext(): ServletContext = servletContext
@@ -133,12 +136,15 @@ public open class FakeHttpSession(
 
     public companion object {
         private val sessionIdGenerator = AtomicInteger()
+        /**
+         * Creates a session which times out after [ServletContext.getSessionTimeout] minutes.
+         */
         public fun create(ctx: ServletContext): FakeHttpSession =
             FakeHttpSession(
                 generateSessionId(),
                 ctx,
                 System.currentTimeMillis(),
-                30
+                ctx.sessionTimeout * 60
             )
         private fun generateSessionId(): String = sessionIdGenerator.incrementAndGet().toString()
     }

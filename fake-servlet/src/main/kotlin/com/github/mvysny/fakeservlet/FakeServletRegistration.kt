@@ -26,12 +26,22 @@ public class FakeServletRegistration(name: String, className: String) : FakeRegi
         this._loadOnStartup = loadOnStartup
     }
 
+    @Transient
+    public var _servletSecurity: ServletSecurityElement? = null
+
+    /**
+     * Returns no conflicting URL patterns: there is no `web.xml` whose security constraints could win.
+     */
     override fun setServletSecurity(constraint: ServletSecurityElement): MutableSet<String> {
-        TODO("Not yet implemented")
+        _servletSecurity = constraint
+        return mutableSetOf()
     }
 
+    @Transient
+    public var _multipartConfig: MultipartConfigElement? = null
+
     override fun setMultipartConfig(multipartConfig: MultipartConfigElement?) {
-        TODO("Not yet implemented")
+        _multipartConfig = multipartConfig
     }
 
     override fun setRunAsRole(roleName: String?) {

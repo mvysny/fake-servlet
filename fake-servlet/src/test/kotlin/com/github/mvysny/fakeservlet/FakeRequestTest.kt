@@ -47,6 +47,31 @@ class FakeRequestTest {
         expect(false) { session.isValid }
     }
 
+    @Test fun `getSession(false) returns null on invalid session with strict checks`() {
+        request.session.invalidate()
+        FakeHttpEnvironment.strictSessionValidityChecks = true
+        try {
+            expect(null) { request.getSession(false) }
+        } finally {
+            FakeHttpEnvironment.strictSessionValidityChecks = false
+        }
+    }
+
+    @Test fun characterEncoding() {
+        expect(null) { request.characterEncoding }
+        request.setCharacterEncoding("UTF-8")
+        expect("UTF-8") { request.characterEncoding }
+    }
+
+    @Test fun `headers are case-insensitive`() {
+        expect("IntelliJ IDEA/182.4892.20") { request.getHeader("User-Agent") }
+        expectList("IntelliJ IDEA/182.4892.20") { request.getHeaders("USER-AGENT").toList() }
+        request.headers["X-Count"] = listOf("5")
+        expect(5) { request.getIntHeader("x-count") }
+        expect(null) { request.getHeader("foo") }
+        expectList() { request.getHeaders("foo").toList() }
+    }
+
     @Test fun `getSession(true) creates a new session when invalidated`() {
         var session = request.session as FakeHttpSession
         expect(true) { session.isValid }

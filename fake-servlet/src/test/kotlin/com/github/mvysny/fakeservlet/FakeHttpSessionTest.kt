@@ -33,6 +33,22 @@ class FakeHttpSessionTest {
         (session as Serializable).cloneBySerialization()
     }
 
+    @Test fun `maxInactiveInterval is the context session timeout, in seconds`() {
+        expect(30 * 60) { session.maxInactiveInterval }
+        val ctx = FakeContext()
+        ctx.sessionTimeout = 5
+        expect(5 * 60) { FakeHttpSession.create(ctx).maxInactiveInterval }
+    }
+
+    @Test fun lastAccessedTime() {
+        expect(session.creationTime) { session.lastAccessedTime }
+    }
+
+    @Test fun `copy constructor keeps creationTime`() {
+        val copy = FakeHttpSession(session)
+        expect(session.creationTime) { copy.creationTime }
+    }
+
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @Nested inner class invalidate {
         @BeforeAll fun setup() { FakeHttpEnvironment.strictSessionValidityChecks = true }

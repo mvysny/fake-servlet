@@ -82,15 +82,23 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
 
     override fun getServletPath(): String = ""
 
-    override fun getSession(create: Boolean): HttpSession {
+    /**
+     * `getSession(false)` on an invalidated session returns that session unless
+     * [FakeHttpEnvironment.strictSessionValidityChecks] is on, which returns `null` as the spec says.
+     */
+    override fun getSession(create: Boolean): HttpSession? {
         val isValid = (session as? FakeHttpSession)?.isValid ?: true
-        if (create && !isValid) {
-            session = FakeHttpSession.create(session.servletContext)
+        if (!isValid) {
+            if (create) {
+                session = FakeHttpSession.create(session.servletContext)
+            } else if (FakeHttpEnvironment.strictSessionValidityChecks) {
+                return null
+            }
         }
         return session
     }
 
-    override fun getSession(): HttpSession = getSession(true)
+    override fun getSession(): HttpSession = getSession(true)!!
 
     override fun getServerName(): String = "127.0.0.1"
 
@@ -200,7 +208,7 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
     override fun getRemoteAddr(): String = FakeHttpEnvironment.remoteAddr
 
     override fun getHeaders(name: String): Enumeration<String> {
-        val h = headers[name]
+        val h = findHeader(name)
         return if (h == null) Collections.emptyEnumeration() else Collections.enumeration(h)
     }
 
@@ -227,7 +235,7 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
      */
     override fun getAuthType(): String? = FakeHttpEnvironment.authType
 
-    override fun getCharacterEncoding(): String? = null
+    override fun getCharacterEncoding(): String? = characterEncodingInt
 
     override fun removeAttribute(name: String) {
         attributes.remove(name)
@@ -240,7 +248,13 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
         headers["user-agent"] = listOf("IntelliJ IDEA/182.4892.20")
     }
 
-    override fun getHeader(headerName: String): String? = headers[headerName]?.get(0)
+    override fun getHeader(headerName: String): String? = findHeader(headerName)?.get(0)
+
+    /**
+     * HTTP header names are case-insensitive, while [headers] keys are not.
+     */
+    private fun findHeader(name: String): List<String>? =
+        headers[name] ?: headers.entries.firstOrNull { it.key.equals(name, ignoreCase = true) }?.value
 
     override fun getContextPath(): String = ""
 

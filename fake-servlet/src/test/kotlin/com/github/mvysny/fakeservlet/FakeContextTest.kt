@@ -1,5 +1,7 @@
 package com.github.mvysny.fakeservlet
 
+import javax.servlet.MultipartConfigElement
+import javax.servlet.ServletSecurityElement
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.expect
@@ -48,6 +50,44 @@ class FakeContextTest {
     @Test fun serializable() {
         ctx.setAttribute("foo", "bar")
         ctx.setInitParameter("foo", "bar")
+        ctx.cloneBySerialization()
+    }
+
+    @Test fun version() {
+        expect(4) { ctx.majorVersion }
+        expect(0) { ctx.minorVersion }
+        expect(4) { ctx.effectiveMajorVersion }
+        expect(0) { ctx.effectiveMinorVersion }
+    }
+
+    @Test fun mimeType() {
+        expect("text/html") { ctx.getMimeType("index.html") }
+        expect(null) { ctx.getMimeType("foo.unknownextension") }
+    }
+
+    @Test fun servletRegistrations() {
+        expect(null) { ctx.getServletRegistration("foo") }
+        expect(true) { ctx.servletRegistrations.isEmpty() }
+        val reg = ctx.addServlet("foo", "com.example.FooServlet")
+        expect(reg) { ctx.getServletRegistration("foo") }
+        expect(mapOf<String, Any>("foo" to reg)) { ctx.servletRegistrations.toMap() }
+    }
+
+    @Test fun `setInitParameters() returns the conflicting names`() {
+        val reg = ctx.addFilter("foo", "com.example.FooFilter")
+        reg.setInitParameter("a", "1")
+        expect(setOf("a")) { reg.setInitParameters(mutableMapOf("a" to "2", "b" to "3")) }
+        expect(mapOf("a" to "1", "b" to "3")) { reg.initParameters }
+    }
+
+    @Test fun `servlet security and multipart config`() {
+        val reg = ctx.addServlet("foo", "com.example.FooServlet") as FakeServletRegistration
+        val security = ServletSecurityElement()
+        expect(setOf()) { reg.setServletSecurity(security) }
+        expect(security) { reg._servletSecurity }
+        val multipart = MultipartConfigElement("/tmp")
+        reg.setMultipartConfig(multipart)
+        expect(multipart) { reg._multipartConfig }
         ctx.cloneBySerialization()
     }
 }

@@ -44,7 +44,6 @@ public open class FakeResponse : HttpServletResponse {
     override fun encodeRedirectUrl(url: String): String = encodeRedirectURL(url)
 
     override fun flushBuffer() {
-        buffer.reset()
         _committed = true
     }
 
@@ -52,7 +51,10 @@ public open class FakeResponse : HttpServletResponse {
 
     override fun sendRedirect(location: String) {
         resetBuffer()
-        log.error("sendRedirect($location)")
+        log.info("sendRedirect($location)")
+        _status = HttpServletResponse.SC_FOUND
+        setHeader("Location", location)
+        _committed = true
     }
 
     public val buffer: ByteArrayOutputStream = ByteArrayOutputStream()
@@ -71,12 +73,14 @@ public open class FakeResponse : HttpServletResponse {
     override fun sendError(sc: Int, msg: String?) {
         resetBuffer()
         log.error("The app requested to send an error: sendError($sc, $msg)")
+        _status = sc
         _committed = true
     }
 
     override fun sendError(sc: Int) {
         resetBuffer()
         log.error("The app requested to send an error: sendError($sc)")
+        _status = sc
         _committed = true
     }
 
@@ -85,8 +89,13 @@ public open class FakeResponse : HttpServletResponse {
 
     public var _characterEncoding: String = "ISO-8859-1"
 
+    /**
+     * Ignored once [getWriter] was called, as the spec says: the writer already encodes with the old charset.
+     */
     override fun setCharacterEncoding(charset: String) {
-        _characterEncoding = charset
+        if (_writer == null) {
+            _characterEncoding = charset
+        }
     }
 
     override fun addDateHeader(name: String, date: Long) {
@@ -154,7 +163,32 @@ public open class FakeResponse : HttpServletResponse {
 
     override fun getContentType(): String? = _contentType
 
-    override fun getWriter(): PrintWriter = PrintWriter(OutputStreamWriter(buffer, _characterEncoding))
+    private var _writer: PrintWriter? = null
+
+    /**
+     * Returns the same writer on every call; it flushes after every write so [buffer] is always up to date.
+     */
+    override fun getWriter(): PrintWriter {
+        if (_writer == null) {
+            _writer = object : PrintWriter(OutputStreamWriter(buffer, _characterEncoding), true) {
+                override fun write(c: Int) {
+                    super.write(c)
+                    flush()
+                }
+
+                override fun write(buf: CharArray, off: Int, len: Int) {
+                    super.write(buf, off, len)
+                    flush()
+                }
+
+                override fun write(s: String, off: Int, len: Int) {
+                    super.write(s, off, len)
+                    flush()
+                }
+            }
+        }
+        return _writer!!
+    }
 
     override fun containsHeader(name: String): Boolean = headers.containsKey(name)
 
