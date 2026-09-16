@@ -219,10 +219,13 @@ public open class FakeRequest(private var session: HttpSession) : HttpServletReq
      */
     override fun getUserPrincipal(): Principal? = userPrincipalInt
 
+    /**
+     * Decodes [content] with [getCharacterEncoding], or UTF-8 when none was set.
+     */
     override fun getReader(): BufferedReader {
         check(contentStream == null) { "getInputStream() has already been called" }
         if (contentReader == null) {
-            contentReader = inputStream.bufferedReader()
+            contentReader = inputStream.bufferedReader(characterEncoding?.let { charset(it) } ?: Charsets.UTF_8)
             contentStream = null
         }
         return contentReader!!

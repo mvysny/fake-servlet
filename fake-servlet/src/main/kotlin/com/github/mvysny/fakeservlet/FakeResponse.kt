@@ -106,10 +106,18 @@ public open class FakeResponse : HttpServletResponse {
         _locale = loc
     }
 
-    override fun getHeaders(name: String): Collection<String> = headers[name]?.toList() ?: listOf()
+    override fun getHeaders(name: String): Collection<String> = findHeader(name)?.toList() ?: listOf()
+
+    /**
+     * HTTP header names are case-insensitive, while [headers] keys are not.
+     */
+    private fun findHeaderName(name: String): String? =
+        if (headers.containsKey(name)) name else headers.keys.firstOrNull { it.equals(name, ignoreCase = true) }
+
+    private fun findHeader(name: String): Array<String>? = findHeaderName(name)?.let { headers[it] }
 
     override fun addHeader(name: String, value: String) {
-        headers.compute(name) { _, v-> (v ?: arrayOf()) + value }
+        headers.compute(findHeaderName(name) ?: name) { _, v-> (v ?: arrayOf()) + value }
     }
 
     override fun setContentLength(len: Int) {
@@ -126,9 +134,16 @@ public open class FakeResponse : HttpServletResponse {
         buffer.reset()
     }
 
+    /**
+     * Clears the buffer, the status, headers, cookies and the content type, as the spec says.
+     */
     override fun reset() {
         checkNotCommitted()
         buffer.reset()
+        _status = HttpServletResponse.SC_OK
+        headers.clear()
+        cookies.clear()
+        _contentType = null
     }
 
     override fun setDateHeader(name: String, date: Long) {
@@ -157,7 +172,7 @@ public open class FakeResponse : HttpServletResponse {
         _status = sc
     }
 
-    override fun getHeader(name: String): String? = headers[name]?.get(0)
+    override fun getHeader(name: String): String? = findHeader(name)?.get(0)
 
     public var _contentType: String? = null
 
@@ -190,7 +205,7 @@ public open class FakeResponse : HttpServletResponse {
         return _writer!!
     }
 
-    override fun containsHeader(name: String): Boolean = headers.containsKey(name)
+    override fun containsHeader(name: String): Boolean = findHeaderName(name) != null
 
     override fun setIntHeader(name: String, value: Int) {
         setHeader(name, value.toString())
@@ -199,6 +214,7 @@ public open class FakeResponse : HttpServletResponse {
     override fun getHeaderNames(): Collection<String> = headers.keys.toSet()
 
     override fun setHeader(name: String, value: String) {
+        headers.keys.removeIf { it.equals(name, ignoreCase = true) }
         headers[name] = arrayOf(value)
     }
 

@@ -21,10 +21,15 @@ public open class FakeRegistration(
 
     final override fun getInitParameter(name: String): String? = _initParameters[name]
 
+    /**
+     * Sets nothing when any name is already set, as the spec says; returns those conflicting names.
+     */
     final override fun setInitParameters(initParameters: MutableMap<String, String>): MutableSet<String> {
-        val result = mutableSetOf<String>()
-        initParameters.forEach { (key, value) -> if (!setInitParameter(key, value)) result.add(key) }
-        return result
+        val conflicts = initParameters.keys.filterTo(mutableSetOf()) { _initParameters.containsKey(it) }
+        if (conflicts.isEmpty()) {
+            initParameters.forEach { (key, value) -> setInitParameter(key, value) }
+        }
+        return conflicts
     }
 
     final override fun getInitParameters(): Map<String, String> = Collections.unmodifiableMap(_initParameters)
@@ -43,7 +48,7 @@ public class FakeFilterRegistration(name: String, className: String) : FakeRegis
     private val _servletNameMappings = CopyOnWriteArraySet<String>()
 
     override fun addMappingForServletNames(
-        dispatcherTypes: EnumSet<DispatcherType>,
+        dispatcherTypes: EnumSet<DispatcherType>?,
         isMatchAfter: Boolean,
         vararg servletNames: String
     ) {
@@ -55,7 +60,7 @@ public class FakeFilterRegistration(name: String, className: String) : FakeRegis
     private val _urlPatternMappings = CopyOnWriteArraySet<String>()
 
     override fun addMappingForUrlPatterns(
-        dispatcherTypes: EnumSet<DispatcherType>,
+        dispatcherTypes: EnumSet<DispatcherType>?,
         isMatchAfter: Boolean,
         vararg urlPatterns: String
     ) {

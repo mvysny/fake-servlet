@@ -150,8 +150,9 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun getRealPath(path: String): String? {
         for (realPathRoot in realPathRoots) {
-            val realPath: File = File(moduleDir, "$realPathRoot/$path").canonicalFile.absoluteFile
-            if (realPath.absolutePath.startsWith(File(realPathRoot).absolutePath) && realPath.exists()) {
+            val root: File = File(moduleDir, realPathRoot).canonicalFile
+            val realPath: File = File(root, path).canonicalFile
+            if (realPath.toPath().startsWith(root.toPath()) && realPath.exists()) {
                 return realPath.absolutePath
             }
         }
@@ -253,7 +254,7 @@ public open class FakeContext : ServletContext, Serializable {
 
     override fun addServlet(servletName: String, servletClass: Class<out Servlet>): ServletRegistration.Dynamic = addServlet(servletName, servletClass.name)
 
-    override fun addJspFile(servletName: String, jspFile: String): ServletRegistration.Dynamic = FakeServletRegistration(servletName, jspFile)
+    override fun addJspFile(servletName: String, jspFile: String): ServletRegistration.Dynamic = addServlet(servletName, jspFile)
 
     @Deprecated("Deprecated in Java")
     override fun getServlets(): Enumeration<Servlet> = Collections.emptyEnumeration()
